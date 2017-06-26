@@ -197,76 +197,72 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
                     }
                 }
 
-                if (currentCaseSubmit.status !== StatusType.Running) {
-                    continue;
+                // TODO: This is a complete mess. Please reduce the complexity of this part.
+                if (currentCaseSubmit.status === StatusType.Running) {
+                    await tryEmptyDir(workingDir);
+                    await fse.copy(testDataPath + '/' + testcase.output, spjWorkingDir + '/answer');
+                    currentCaseSubmit.answer = await readFileLength(spjWorkingDir + '/answer', Config.dataDisplayLimit);
+                    if (useSpj) {
+                        await fse.copy(testDataPath + '/' + testcase.input, spjWorkingDir + '/input');
+                        await fse.writeFile(spjWorkingDir + '/code', task.code);
+                        const spjRunResult = await runProgram(testData.spjLanguage,
+                            spjBinDir,
+                            spjWorkingDir,
+                            Config.spjTimeLimit,
+                            Config.spjMemoryLimit * 1024 * 1024,
+                            null,
+                            'score.txt',
+                            'message.txt');
+
+                        if (spjRunResult.result.status !== SandboxStatus.OK) {
+                            currentCaseSubmit.status = StatusType.JudgementFailed;
+                            currentCaseSubmit.spjMessage = `Special Judge ${SandboxStatus[spjRunResult.result.status]} encouneted.`;
+                        } else {
+                            const scoreString = await fse.readFile(spjWorkingDir + '/score.txt'),
+                                score = Number(scoreString);
+                            const messageString = await readFileLength(spjWorkingDir + '/message.txt', Config.dataDisplayLimit);
+
+                            if (score === NaN) {
+                                currentCaseSubmit.status = StatusType.JudgementFailed;
+                                currentCaseSubmit.spjMessage = `Special Judge returned a non-number score: ${scoreString}.`;
+                            } else {
+                                currentCaseSubmit.score = score;
+                                switch (currentCaseSubmit.score) {
+                                    case Config.fullScore:
+                                        currentCaseSubmit.status = StatusType.Accepted;
+                                        break;
+                                    case 0:
+                                        currentCaseSubmit.status = StatusType.WrongAnswer;
+                                        break;
+                                    default:
+                                        currentCaseSubmit.status = StatusType.PartiallyCorrect;
+                                        break;
+                                }
+                                currentCaseSubmit.spjMessage = messageString;
+                            }
+                        }
+                    } else {
+                        const diffResult = await runDiff(spjWorkingDir, 'user_out', 'answer');
+                        currentCaseSubmit.score = diffResult.pass ? Config.fullScore : 0;
+                        currentCaseSubmit.status = diffResult.pass ? StatusType.Accepted : StatusType.WrongAnswer;
+                        currentCaseSubmit.spjMessage = diffResult.message;
+                    }
+                }
+                let currentScore = 0;
+                const scores = currentSubtaskResult.testcases.map(t => t.score);
+                if (subtask.type === SubtaskScoringType.Minimum) {
+                    currentScore = _.min(scores);
+                } else if (subtask.type === SubtaskScoringType.Multiple) {
+                    currentScore = _.reduce(scores,
+                        (res, cur) => res * (cur / Config.fullScore), Config.fullScore);
+                } else if (subtask.type === SubtaskScoringType.Summation) {
+                    currentScore = _.reduce(scores,
+                        (res, cur) => res + (cur / scores.length), 0);
                 }
 
-                await tryEmptyDir(workingDir);
-                await fse.copy(testDataPath + '/' + testcase.output, spjWorkingDir + '/answer');
-                currentCaseSubmit.answer = await readFileLength(spjWorkingDir + '/answer', Config.dataDisplayLimit);
-                if (useSpj) {
-                    await fse.copy(testDataPath + '/' + testcase.input, spjWorkingDir + '/input');
-                    await fse.writeFile(spjWorkingDir + '/code', task.code);
-                    const spjRunResult = await runProgram(testData.spjLanguage,
-                        spjBinDir,
-                        spjWorkingDir,
-                        Config.spjTimeLimit,
-                        Config.spjMemoryLimit * 1024 * 1024,
-                        null,
-                        'score.txt',
-                        'message.txt');
-
-                    if (spjRunResult.result.status !== SandboxStatus.OK) {
-                        currentCaseSubmit.status = StatusType.JudgementFailed;
-                        currentCaseSubmit.spjMessage = `Special Judge ${SandboxStatus[spjRunResult.result.status]} encouneted.`;
-                        continue;
-                    }
-
-                    const scoreString = await fse.readFile(spjWorkingDir + '/score.txt'),
-                        score = Number(scoreString);
-                    const messageString = await readFileLength(spjWorkingDir + '/message.txt', Config.dataDisplayLimit);
-
-                    if (score === NaN) {
-                        currentCaseSubmit.status = StatusType.JudgementFailed;
-                        currentCaseSubmit.spjMessage = `Special Judge returned a non-number score: ${scoreString}.`;
-                        continue;
-                    }
-
-                    currentCaseSubmit.score = score;
-                    switch (currentCaseSubmit.score) {
-                        case Config.fullScore:
-                            currentCaseSubmit.status = StatusType.Accepted;
-                            break;
-                        case 0:
-                            currentCaseSubmit.status = StatusType.WrongAnswer;
-                            break;
-                        default:
-                            currentCaseSubmit.status = StatusType.PartiallyCorrect;
-                            break;
-                    }
-
-                    currentCaseSubmit.spjMessage = messageString;
-                } else {
-                    const diffResult = await runDiff(spjWorkingDir, 'user_out', 'answer');
-                    currentCaseSubmit.score = diffResult.pass ? Config.fullScore : 0;
-                    currentCaseSubmit.status = diffResult.pass ? StatusType.Accepted : StatusType.WrongAnswer;
-                    currentCaseSubmit.spjMessage = diffResult.message;
-                }
+                currentSubtaskResult.score = currentScore / Config.fullScore * subtask.score;
             }
 
-            let currentScore = 0;
-            const scores = currentSubtaskResult.testcases.map(t => t.score);
-            if (subtask.type === SubtaskScoringType.Minimum) {
-                currentScore = _.min(scores);
-            } else if (subtask.type === SubtaskScoringType.Multiple) {
-                currentScore = _.reduce(scores,
-                    (res, cur) => res * (cur / Config.fullScore), Config.fullScore);
-            } else if (subtask.type === SubtaskScoringType.Summation) {
-                currentScore = _.reduce(scores,
-                    (res, cur) => res + (cur / scores.length), 0);
-            }
-
-            currentSubtaskResult.score = currentScore / Config.fullScore * subtask.score;
         }
         return judgeResult;
     } finally {
