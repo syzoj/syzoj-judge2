@@ -1,0 +1,35 @@
+{
+  "name": "syzoj-judge-v2",
+  "version": "0.0.1",
+  "description": "Judge for SYZOJ.",
+  "main": "lib/index.js",
+  "author": "t123yh",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "adm-zip": "^0.4.7",
+    "bluebird": "^3.5.0",
+    "fs-extra": "^3.0.1",
+    "get-folder-size": "^1.0.0",
+    "lodash": "^4.17.4",
+    "posix": "^4.1.1",
+    "randomstring": "^1.1.5",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.1",
+    "simple-sandbox": "^0.0.16",
+    "url": "^0.11.0"
+  },
+  "devDependencies": {
+    "@types/bluebird": "^3.5.5",
+    "@types/fs-extra": "^3.0.3",
+    "@types/lodash": "^4.14.66",
+    "@types/node": "^7.0.31",
+    "@types/randomstring": "^1.1.6",
+    "@types/request": "^0.0.44",
+    "@types/request-promise": "^4.1.35",
+    "typescript": "^2.3.4"
+  },
+  "scripts": {
+    "build": "tsc -d -p .",
+    "build:watch": "tsc -w -d -p ."
+  }
+}

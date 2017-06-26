@@ -1,0 +1,1 @@
+export const config : any = require('../config.js');

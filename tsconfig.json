@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "outDir": "./lib",
+        "rootDir": "./src",
+        "target": "es2017",
+        "lib": [
+            "dom",
+            "es2015",
+            "es2016"
+        ]
+    }
+}
