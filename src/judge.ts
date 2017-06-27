@@ -103,7 +103,7 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
         if (useSpj) {
             await createOrEmptyDir(spjBinDir);
             const spjCode = await fse.readFile(testDataPath + '/spj_' + testData.spjLanguage.name + '.' + testData.spjLanguage.fileExtension, 'utf8');
-            const spjCompilationResult = await compile(spjCode, language, spjBinDir);
+            const spjCompilationResult = await compile(spjCode, testData.spjLanguage, spjBinDir);
             if (!spjCompilationResult.ok) {
                 return {
                     status: StatusType.JudgementFailed,
