@@ -55,7 +55,7 @@ export async function readFileLength(path: string, lengthLimit: number, appendPr
         }
         return ret;
     } catch (e) {
-        return `Unable to read file: ${e.code}.`;
+        return "";
     } finally {
         if (file != -1) {
             await fse.close(file);

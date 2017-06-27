@@ -170,7 +170,7 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
 
                 console.log(testcase.input + " Run result: " + JSON.stringify(runResult));
 
-                currentCaseSubmit.time = runResult.result.time;
+                currentCaseSubmit.time = Math.round(runResult.result.time / 1e6);
                 currentCaseSubmit.memory = runResult.result.memory / 1024;
 
                 if (runResult.outputLimitExceeded) {
@@ -192,7 +192,7 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
                 try {
                     await fse.move(workingDir + '/' + outputFileName, spjWorkingDir + '/user_out');
                 } catch (e) {
-                    if (e.code === 'ENOENT') {
+                    if (e.code === 'ENOENT' && runResult.result.status === SandboxStatus.OK) {
                         currentCaseSubmit.status = StatusType.FileError;
                     }
                 }

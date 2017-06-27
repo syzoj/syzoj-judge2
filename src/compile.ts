@@ -20,9 +20,12 @@ export async function compile(source: string, language: Language, targetDir: str
 
     const srcDir = `${Config.workingDirectory}/src-${randomString.generate(10)}`;
     const binDir = targetDir;
+    const tempDir = `${Config.workingDirectory}/temp`;
     await createOrEmptyDir(srcDir);
+    await createOrEmptyDir(tempDir);
     await setWriteAccess(srcDir, false);
     await setWriteAccess(binDir, true);
+    await setWriteAccess(tempDir, true);
 
     const srcPath = `${srcDir}/${language.sourceFileName}`;
     await fse.writeFile(srcPath, source, { encoding: 'utf8' });
@@ -39,6 +42,10 @@ export async function compile(source: string, language: Language, targetDir: str
     }, {
         src: binDir,
         dst: binDir_Sandbox,
+        limit: -1
+    }, {
+        src: tempDir,
+        dst: '/tmp',
         limit: -1
     }]);
 
@@ -65,9 +72,7 @@ export async function compile(source: string, language: Language, targetDir: str
             } else { // If compilation error
                 result = {
                     ok: false,
-                    message: `Compiler returned ${sandboxResult.code}\n` + await readFileLength
-                        (binDir + '/' + compileConfig.messageFile,
-                        Config.compilerMessageLimit)
+                    message: await readFileLength(binDir + '/' + compileConfig.messageFile, Config.compilerMessageLimit)
                 };
             }
         } else {

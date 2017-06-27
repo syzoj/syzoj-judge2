@@ -17,7 +17,7 @@ function convertJudgeResult(input: JudgeResult) {
         result.max_memory = _.max(input.subtasks.map(s => _.max(s.testcases.map(t => t.memory))));
         result.total_time = _.sum(input.subtasks.map(s => _.sum(s.testcases.map(t => t.time))));
 
-        result.score = _.sum(input.subtasks.map(val => val.score));
+        result.score = Math.round(_.sum(input.subtasks.map(val => val.score)));
         result.subtasks = input.subtasks.map(val => {
             let result;
             if (val.testcases.length > 0) {
@@ -25,8 +25,8 @@ function convertJudgeResult(input: JudgeResult) {
                 result = {
                     status: '',
                     pending: isPending,
-                    score: val.score,
-                    case_num: val.testcases.length,
+                    score: Math.round(val.score),
+                    case_num: val.case_num,
                 };
                 if (!isPending) {
                     // If all accepted
@@ -42,17 +42,19 @@ function convertJudgeResult(input: JudgeResult) {
                     result.status = `Running on #${running.id}`;
                 }
                 for (const testcase of val.testcases) {
-                    result[testcase.id - 1] = {
-                        status: statusToString[testcase.status],
-                        time_used: testcase.time,
-                        memory_used: testcase.memory,
-                        input: testcase.input,
-                        user_out: testcase.userOutput,
-                        answer: testcase.answer,
-                        score: testcase.score,
-                        user_error: testcase.userError,
-                        spj_message: testcase.spjMessage
-                    };
+                    if (testcase.status !== StatusType.Running) {
+                         result[testcase.id - 1] = {
+                            status: statusToString[testcase.status],
+                            time_used: testcase.time,
+                            memory_used: testcase.memory,
+                            input: testcase.input,
+                            user_out: testcase.userOutput,
+                            answer: testcase.answer,
+                            score: Math.round(testcase.score),
+                            user_err: testcase.userError,
+                            spj_message: testcase.spjMessage
+                        };
+                    }
                 }
             } else {
                 if (val.status === StatusType.Waiting) {
