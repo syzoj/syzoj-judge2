@@ -248,16 +248,33 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
                         currentCaseSubmit.spjMessage = diffResult.message;
                     }
                 }
+
+                let scores = currentSubtaskResult.testcases.map(t => t.score);
+
                 let currentScore = 0;
-                const scores = currentSubtaskResult.testcases.map(t => t.score);
                 if (subtask.type === SubtaskScoringType.Minimum) {
-                    currentScore = _.min(scores);
+                    if (scores.length === subtask.cases.length) {
+                        currentScore = 100;
+                        for (let i = 0; i < subtask.cases.length; i++) {
+                            currentScore = Math.min(currentScore, scores[i]);
+                        }
+                    }
                 } else if (subtask.type === SubtaskScoringType.Multiple) {
-                    currentScore = _.reduce(scores,
-                        (res, cur) => res * (cur / Config.fullScore), Config.fullScore);
+                    if (scores.length === subtask.cases.length) {
+                        currentScore = 1;
+                        for (let i = 0; i < subtask.cases.length; i++) {
+                            if (i >= scores.length) continue;
+                            currentScore = currentScore * (scores[i] / Config.fullScore);
+                        }
+                        currentScore *= Config.fullScore;
+                    }
                 } else if (subtask.type === SubtaskScoringType.Summation) {
-                    currentScore = _.reduce(scores,
-                        (res, cur) => res + (cur / scores.length), 0);
+                    currentScore = 0;
+                    for (let i = 0; i < scores.length; i++) {
+                        currentScore += scores[i] / subtask.cases.length;
+                    }
+                    console.log(subtask.cases.length);
+                    console.log(currentScore);
                 }
 
                 currentSubtaskResult.score = currentScore / Config.fullScore * subtask.score;
