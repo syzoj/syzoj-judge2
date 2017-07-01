@@ -185,7 +185,7 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
                     currentCaseSubmit.status = StatusType.RuntimeError;
                 }
 
-                currentCaseSubmit.userError = await readFileLength(workingDir + '/' + tempErrFile, Config.dataDisplayLimit);
+                currentCaseSubmit.userError = await readFileLength(workingDir + '/' + tempErrFile, Config.stderrDisplayLimit);
                 currentCaseSubmit.userOutput = await readFileLength(workingDir + '/' + outputFileName, Config.dataDisplayLimit);
 
                 await createOrEmptyDir(spjWorkingDir);
