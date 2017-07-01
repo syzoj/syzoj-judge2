@@ -273,8 +273,6 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
                     for (let i = 0; i < scores.length; i++) {
                         currentScore += scores[i] / subtask.cases.length;
                     }
-                    console.log(subtask.cases.length);
-                    console.log(currentScore);
                 }
 
                 currentSubtaskResult.score = currentScore / Config.fullScore * subtask.score;
