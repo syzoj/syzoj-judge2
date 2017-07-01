@@ -12,7 +12,7 @@ export const lang =  {
         executable: "/usr/bin/luac",
 		parameters: ["luac", "-o", `${outputDirectory}/a.out`, sourcePath],
         time: 5000,
-        memory: 201 * 1024 * 1024, // 20MB
+        memory: 1024 * 1024 * 1024,
         process: 10,
         // This is just a redirection. You can simply ignore this
         // if you can specify custom location for message output
