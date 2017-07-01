@@ -3,15 +3,24 @@ import { ExecParam } from './languages';
 import { config as Config } from './config';
 import { SandboxParameter, MountInfo } from 'simple-sandbox/src/interfaces';
 import * as posix from 'posix';
+import * as walk from 'fs-walk';
+import * as pathLib from 'path';
 
-export async function setWriteAccess(path: string, writeAccess: boolean) {
-    await fse.chmod(path, 0o755);
-    if (writeAccess) {
-        const user = posix.getpwnam(Config.sandbox.user);
-        await fse.chown(path, user.uid, user.gid);
-    } else {
-        await fse.chown(path, process.getuid(), process.getgid());
-    }
+export async function setWriteAccess(dirName: string, writeAccess: boolean) {
+    await new Promise((res, rej) => {
+        walk.walk(dirName, (basedir, filename, stat, next) => {
+            (async () => {
+                const path = pathLib.join(basedir, filename);
+                await fse.chmod(path, 0o755);
+                if (writeAccess) {
+                    const user = posix.getpwnam(Config.sandbox.user);
+                    await fse.chown(path, user.uid, user.gid);
+                } else {
+                    await fse.chown(path, process.getuid(), process.getgid());
+                }
+            })().then(() => next(), (err) => next(err));
+        }, (err) => { if (err) rej(err); else res(); });
+    });
 }
 
 export async function createOrEmptyDir(path: string): Promise<void> {
