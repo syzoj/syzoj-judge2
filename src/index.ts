@@ -106,7 +106,7 @@ function convertJudgeResult(input: JudgeResult) {
 
     const runningIndex = result.subtasks.findIndex(t => t.runningTaskId != undefined);
     if (runningIndex !== -1) {
-        result.status = `Running on #${runningIndex + 1}.${result.subtasks[runningIndex].runningTaskId}`;
+        result.status = result.subtasks.length === 1 ? `Running on #${result.subtasks[runningIndex].runningTaskId}` : `Running on #${runningIndex + 1}.${result.subtasks[runningIndex].runningTaskId}`;
         result.pending = true;
     }
 
