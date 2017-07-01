@@ -12,7 +12,7 @@ module.exports = {
         executable: "/usr/bin/gcc",
         parameters: ["gcc", sourcePath, "-o", `${outputDirectory}/a.out`, "-O2", "-fdiagnostics-color=always"],
         time: 5000,
-        memory: 201 * 1024 * 1024, // 20MB
+        memory: 1024 * 1024 * 1024,
         process: 10,
         // This is just a redirection. You can simply ignore this
         // if you can specify custom location for message output
