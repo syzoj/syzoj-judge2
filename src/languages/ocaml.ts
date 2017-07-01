@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "ocaml",
     sourceFileName: "a.ml",
     fileExtension: "ml",

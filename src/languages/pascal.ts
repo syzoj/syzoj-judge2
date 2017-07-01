@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "pascal",
     sourceFileName: "a.pas",
     fileExtension: "pas",

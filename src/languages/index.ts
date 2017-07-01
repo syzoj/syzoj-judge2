@@ -1,5 +1,3 @@
-import * as path from 'path';
-
 export interface ExecParam {
     executable: string;
     parameters: string[];
@@ -30,5 +28,21 @@ export interface Language {
     ) => ExecParam;
 }
 
-const languageDirectory: string = path.join(__dirname, 'languages');
-export const languages: Language[] = require('fs').readdirSync(languageDirectory).filter(filename => filename.endsWith('.js')).map(filename => require(path.join(languageDirectory, filename)));
+export const languages : Language[] = [
+    require('./c'),
+    require('./cpp'),
+    require('./cpp11'),
+    require('./csharp'),
+    require('./haskell'),
+    require('./java'),
+    require('./lua'),
+    require('./luajit'),
+    require('./nodejs'),
+    require('./ocaml'),
+    require('./pascal'),
+    require('./python2'),
+    require('./python3'),
+    require('./ruby'),
+    require('./vala'),
+    require('./vbnet')
+].map(f => f.lang);

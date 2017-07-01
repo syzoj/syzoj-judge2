@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "csharp",
     sourceFileName: "a.cs",
     fileExtension: "cs",

@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "vbnet",
     sourceFileName: "a.vb",
     fileExtension: "vb",

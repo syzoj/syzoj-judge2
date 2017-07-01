@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "haskell",
     sourceFileName: "a.hs",
     fileExtension: "hs",

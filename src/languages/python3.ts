@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "python3",
     sourceFileName: "a.py",
     fileExtension: "py",

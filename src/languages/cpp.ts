@@ -1,4 +1,4 @@
-module.exports = {
+export const lang = {
     name: "cpp",
     sourceFileName: "a.cpp",
     fileExtension: "cpp",
@@ -19,6 +19,7 @@ module.exports = {
         // in the parameter of the compiler, or have redirected the compilation 
         // message to somewhere.
         // An example will be available soon.
+        stdout: `${outputDirectory}/message.txt`,
         stderr: `${outputDirectory}/message.txt`,
         // We will read this file for message in the output directory.
         messageFile: 'message.txt',

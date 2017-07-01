@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "java",
     sourceFileName: "Main.java",
     fileExtension: "java",

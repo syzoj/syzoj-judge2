@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "vala",
     sourceFileName: "a.vala",
     fileExtension: "vala",

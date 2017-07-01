@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "ruby",
     sourceFileName: "a.rb",
     fileExtension: "rb",

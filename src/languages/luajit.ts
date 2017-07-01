@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "luajit",
     sourceFileName: "a.lua",
     fileExtension: "lua",

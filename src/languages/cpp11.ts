@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "cpp11",
     sourceFileName: "a.cpp",
     fileExtension: "cpp",

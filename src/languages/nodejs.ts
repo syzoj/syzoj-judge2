@@ -1,4 +1,4 @@
-module.exports = {
+export const lang =  {
     name: "nodejs",
     sourceFileName: "a.js",
     fileExtension: "js",
