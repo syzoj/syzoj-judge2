@@ -40,7 +40,6 @@ export function parseRules(content: string): SubtaskJudge[] {
     const match_haveSubTask = haveSubtaskJudge.exec(content);
     if (match_haveSubTask) {
         const subtaskRegex = /(sum|min|mul):(\d+) +((?:\S+ )*\S+) *(?:\r?\n)+/g;
-        console.log("Match: " + match_haveSubTask);
         const inputFileName = match_haveSubTask[2];
         const outputFileName = match_haveSubTask[3];
         const answerFileName = match_haveSubTask[4] != undefined ? match_haveSubTask[4] : '-';
