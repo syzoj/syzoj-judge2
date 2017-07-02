@@ -592,9 +592,9 @@ seek-bzip@^1.0.5:
   dependencies:
     commander "~2.8.1"
 
-simple-sandbox@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/simple-sandbox/-/simple-sandbox-0.1.3.tgz#4fba85ad50fc14a3fd0673677396a747b03ff5c3"
+simple-sandbox@^0.1.4:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/simple-sandbox/-/simple-sandbox-0.1.4.tgz#090b81e4e790cf6316e72e33a4300e799222c234"
   dependencies:
     bindings "^1.2.1"
     nan "^2.6.2"
