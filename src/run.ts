@@ -75,16 +75,8 @@ export async function runProgram(language: Language,
     }]);
 
     let result: SandboxResult = null;
-    try {
-        console.log("Starting sandbox!!!!!!!!!!!!!!!!");
-        const sandbox = await startSandbox(sandboxParam);
-        result = await sandbox.waitForStop();
-        console.log("Sandbox done!!!!!!!!!!!!!!!!");
-    } finally {
-        if (result === null || result.status !== SandboxStatus.OK) {
-            await fse.emptyDir(dataDir);
-        }
-    }
+    const sandbox = await startSandbox(sandboxParam);
+    result = await sandbox.waitForStop();
 
     let ole = false;
     const outputSize = await getSize(binDir);
