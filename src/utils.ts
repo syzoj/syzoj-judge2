@@ -27,7 +27,6 @@ export function setWriteAccess(dirName: string, writeAccess: boolean): Promise<v
 }
 
 export async function createOrEmptyDir(path: string): Promise<void> {
-    console.log("Clearing " + path);
     try {
         await fse.mkdir(path);
     } catch (err) {
