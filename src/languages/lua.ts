@@ -10,7 +10,7 @@ export const lang =  {
         // write a shell script or some other stuff, 
         // and put it to your sandbox.
         executable: "/usr/bin/luac",
-		parameters: ["luac", "-o", `${outputDirectory}/a.out`, sourcePath],
+        parameters: ["luac", "-o", `${outputDirectory}/a.out`, sourcePath],
         time: 5000,
         memory: 1024 * 1024 * 1024,
         process: 10,

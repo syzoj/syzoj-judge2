@@ -10,7 +10,7 @@ export const lang =  {
         // write a shell script or some other stuff, 
         // and put it to your sandbox.
         executable: "/usr/bin/luajit",
-		parameters: ["luajit", "-b", sourcePath, `${outputDirectory}/a.out`],
+        parameters: ["luajit", "-b", sourcePath, `${outputDirectory}/a.out`],
         time: 5000,
         memory: 1024 * 1024 * 1024,
         process: 10,
