@@ -23,6 +23,13 @@ export interface TestData {
     spjLanguage?: Language;
 }
 
+function filterHyphen(input: string): string {
+    if (input === null || input === '-')
+        return null;
+    else
+        return input;
+}
+
 export function parseRules(content: string): SubtaskJudge[] {
     // This matches for direct data rule
     // For example,
@@ -39,19 +46,20 @@ export function parseRules(content: string): SubtaskJudge[] {
             score: 100,
             cases: match_NoSubtaskJudge[1].split(' ')
                 .map(s => ({
-                    input: inputFileName.replace('#', s),
-                    output: outputFileName.replace('#', s)
+                    input: filterHyphen(inputFileName.replace('#', s)),
+                    output: filterHyphen(outputFileName.replace('#', s))
                 }))
         };
         return [subtask];
     }
 
-    const haveSubtaskJudge = /^((?:(?:sum|min|mul):\d+\s+(?:\d+\s)*\d+\s*\n+)+)\n*(.+?)\s*\n+(.+?)\s*\n*$/g;
+    const haveSubtaskJudge = /^((?:(?:sum|min|mul):\d+\s+(?:\d+\s)*\d+\s*\n+)+)\n*(.+?)\s*\n+(.+?)\s*\n*(?:\n+(.+))?$/g;
     const match_haveSubTask = haveSubtaskJudge.exec(content);
     if (match_haveSubTask) {
         const subtaskRegex = /(sum|min|mul):(\d+)\s+((?:\d+\s)*\d+)\s*\n+/g;
         const inputFileName = match_haveSubTask[2];
         const outputFileName = match_haveSubTask[3];
+        const answerFileName = match_haveSubTask.length >= 5 ? match_haveSubTask[4] : null;
         const subtasks: SubtaskJudge[] = [];
         let subtaskMatch: RegExpExecArray;
         while ((subtaskMatch = subtaskRegex.exec(match_haveSubTask[1])) !== null) {
@@ -69,8 +77,9 @@ export function parseRules(content: string): SubtaskJudge[] {
                 score: Number(subtaskMatch[2]),
                 cases: subtaskMatch[3].split(' ')
                     .map(s => ({
-                        input: inputFileName.replace('#', s),
-                        output: outputFileName.replace('#', s)
+                        input: filterHyphen(inputFileName.replace('#', s)),
+                        output: filterHyphen(outputFileName.replace('#', s)),
+                        userAnswer: filterHyphen(answerFileName.replace('#', s))
                     }))
             });
         }
