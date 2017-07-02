@@ -71,7 +71,7 @@ export function parseRules(content: string): SubtaskJudge[] {
         return subtasks;
     }
 
-    const noSubtaskJudge = /^\n*((?:\S+ +)*\S+) *(?:\r?\n)+(.+?)\s*(?:\r?\n)+(.+?)\s*(.+?)\s*(?:\r?\n)+(?:\r?\n)*$/g;
+    const noSubtaskJudge = /^\n*((?:\S+ +)*\S+) *(?:\r?\n)+(.+?)\s*(?:\r?\n)+(.+)\s*(?:\r?\n)*(.+)?(?:\r?\n)*$/g;
     const match_NoSubtaskJudge = noSubtaskJudge.exec(content);
     if (match_NoSubtaskJudge !== null) {
         const inputFileName = match_NoSubtaskJudge[2];
