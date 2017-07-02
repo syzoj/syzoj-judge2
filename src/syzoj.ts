@@ -15,10 +15,16 @@ export interface JudgeTask {
     file_io: boolean;
     file_io_input_name: string;
     file_io_output_name: string;
+    problem_type: string;
 }
 
-export async function getJudgeTask(): Promise<JudgeTask> {
-    let task: JudgeTask;
+export interface SubmitAnswerTask {
+    answer_file: string;
+    testdata: string;
+}
+
+export async function getJudgeTask(): Promise<any> {
+    let task: any;
     do {
         try {
             task = (await rp({
@@ -28,7 +34,7 @@ export async function getJudgeTask(): Promise<JudgeTask> {
                 },
                 json: true,
                 jar: true
-            })) as any as JudgeTask;
+            })) as any;
         } catch (e) { }
 
         await Bluebird.delay(config.delay);
@@ -49,5 +55,13 @@ export async function uploadJudgeResult(task: JudgeTask, result: any) {
         },
         json: true,
         jar: true
+    });
+}
+
+export async function downloadUserAnswer(id: string): Promise<Buffer> {
+    return await rp({
+        uri: url.resolve(config.syzoj_url, '/static/uploads/answer/' + id),
+        method: 'GET',
+        encoding: null
     });
 }
