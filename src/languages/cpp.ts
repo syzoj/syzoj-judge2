@@ -38,6 +38,7 @@ export const lang = {
         parameters: [],
         time: time,
         memory: memory,
+        stackSize: memory,
         process: 1,
         stdin: stdinFile,
         stdout: stdoutFile,

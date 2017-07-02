@@ -9,8 +9,8 @@ export const lang =  {
         // To customize the compilation process,
         // write a shell script or some other stuff, 
         // and put it to your sandbox.
-		executable: "/usr/bin/compile-java",
-		parameters: ["compile-java", sourcePath, outputDirectory],
+        executable: "/usr/bin/compile-java",
+        parameters: ["compile-java", sourcePath, outputDirectory],
         time: 5000,
         memory: 1024 * 1024 * 1024,
         process: 20,
