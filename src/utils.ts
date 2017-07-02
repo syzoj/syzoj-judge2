@@ -6,18 +6,23 @@ import * as posix from 'posix';
 import * as klaw from 'klaw';
 import * as pathLib from 'path';
 
-export async function setWriteAccess(dirName: string, writeAccess: boolean) {
+export function setWriteAccess(dirName: string, writeAccess: boolean): Promise<void> {
     const user = posix.getpwnam(Config.sandbox.user);
-    klaw(dirName).on('data', (item) => {
-        (async () => {
-            const path = item.path;
-            await fse.chmod(path, 0o755);
-            if (writeAccess) {
-                await fse.chown(path, user.uid, user.gid);
-            } else {
-                await fse.chown(path, process.getuid(), process.getgid());
-            }
-        })();
+    const operations: Promise<void>[] = [];
+    return new Promise<void>((res, rej) => {
+        klaw(dirName).on('data', (item) => {
+            operations.push((async () => {
+                const path = item.path;
+                await fse.chmod(path, 0o755);
+                if (writeAccess) {
+                    await fse.chown(path, user.uid, user.gid);
+                } else {
+                    await fse.chown(path, process.getuid(), process.getgid());
+                }
+            })());
+        }).on('end', () => {
+            Promise.all(operations).then(() => res(), (err) => rej(err));
+        });
     });
 }
 

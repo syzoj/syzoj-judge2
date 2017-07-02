@@ -141,6 +141,7 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
                 await createOrEmptyDir(workingDir);
                 let stdin, stdout, outputFileName;
                 const inputFilePath = testDataPath + '/' + testcase.input;
+                const answerFilePath = testDataPath + '/' + testcase.output;
                 if (task.file_io) {
                     stdin = null;
                     stdout = null;
@@ -155,6 +156,7 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
                         workingDir + '/' + stdin);
                 }
                 currentCaseSubmit.input = await readFileLength(inputFilePath, Config.dataDisplayLimit);
+                currentCaseSubmit.answer = await readFileLength(answerFilePath, Config.dataDisplayLimit);
 
                 await reportProgress(judgeResult);
                 currentCaseSubmit.pending = false;
@@ -197,11 +199,10 @@ export async function judge(task: JudgeTask, reportProgress: (p: JudgeResult) =>
                     }
                 }
 
+                await tryEmptyDir(workingDir);
                 // TODO: This is a complete mess. Please reduce the complexity of this part.
                 if (currentCaseSubmit.status === StatusType.Running) {
-                    await tryEmptyDir(workingDir);
-                    await fse.copy(testDataPath + '/' + testcase.output, spjWorkingDir + '/answer');
-                    currentCaseSubmit.answer = await readFileLength(spjWorkingDir + '/answer', Config.dataDisplayLimit);
+                    await fse.copy(answerFilePath, spjWorkingDir + '/answer');
                     if (useSpj) {
                         await fse.copy(testDataPath + '/' + testcase.input, spjWorkingDir + '/input');
                         await fse.writeFile(spjWorkingDir + '/code', task.code);
