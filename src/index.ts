@@ -1,5 +1,5 @@
-import { getJudgeTask, uploadJudgeResult } from './syzoj';
-import { judge, StatusType, TestCaseSubmit, SubtaskSubmit, JudgeResult, statusToString } from './judge';
+import { getJudgeTask, uploadJudgeResult, downloadUserAnswer } from './syzoj';
+import { judgeStandard, judgeSubmitAnswer, StatusType, TestCaseSubmit, SubtaskSubmit, JudgeResult, statusToString } from './judge';
 import * as _ from 'lodash';
 
 function convertJudgeResult(input: JudgeResult) {
@@ -43,7 +43,7 @@ function convertJudgeResult(input: JudgeResult) {
                 }
                 for (const testcase of val.testcases) {
                     if (testcase.status !== StatusType.Running) {
-                         result[testcase.id - 1] = {
+                        result[testcase.id - 1] = {
                             status: statusToString[testcase.status],
                             time_used: testcase.time,
                             memory_used: testcase.memory,
@@ -118,10 +118,19 @@ function convertJudgeResult(input: JudgeResult) {
         const task = await getJudgeTask();
         console.log("Got judge task: " + JSON.stringify(task));
         try {
-            const result = await judge(task, async result => {
-                // let uploadResult = await uploadJudgeResult(task, result);
-                await uploadJudgeResult(task, convertJudgeResult(result));
-            });
+            let result;
+            if (task.problem_type === 'submit-answer') {
+                const userData = await downloadUserAnswer(task.code);
+                result = await judgeSubmitAnswer(task, userData, async result => {
+                    // let uploadResult = await uploadJudgeResult(task, result);
+                    await uploadJudgeResult(task, convertJudgeResult(result));
+                });
+            } else {
+                result = await judgeStandard(task, async result => {
+                    // let uploadResult = await uploadJudgeResult(task, result);
+                    await uploadJudgeResult(task, convertJudgeResult(result));
+                });
+            }
             const fr = convertJudgeResult(result);
             console.log("Final: " + JSON.stringify(fr));
             await uploadJudgeResult(task, fr);
