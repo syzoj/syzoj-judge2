@@ -8,6 +8,7 @@
   "dependencies": {
     "adm-zip": "^0.4.7",
     "bluebird": "^3.5.0",
+    "decompress": "^4.2.0",
     "fs-extra": "^3.0.1",
     "get-folder-size": "^1.0.0",
     "klaw": "^2.0.0",
