@@ -120,7 +120,7 @@ function convertJudgeResult(input: JudgeResult) {
         try {
             let result;
             if (task.problem_type === 'submit-answer') {
-                const userData = await downloadUserAnswer(task.code);
+                const userData = await downloadUserAnswer(task.answer_file);
                 result = await judgeSubmitAnswer(task, userData, async result => {
                     // let uploadResult = await uploadJudgeResult(task, result);
                     await uploadJudgeResult(task, convertJudgeResult(result));

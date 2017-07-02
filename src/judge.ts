@@ -133,6 +133,58 @@ async function runSpj(spjLanguage: Language): Promise<SpjResult> {
     }
 }
 
+async function judgeTestCaseSubmitAnswer(testcase: TestCaseJudge,
+    testDataPath: string,
+    currentCaseSubmit: TestCaseSubmit,
+    task: SubmitAnswerTask,
+    spjLanguage: Language): Promise<void> {
+
+    const inputFilePath = testcase.input !== null ?
+        testDataPath + '/' + testcase.input : null;
+    const answerFilePath = testcase.output !== null ?
+        testDataPath + '/' + testcase.output : null;
+    const userAnswerFilePath = testcase.userAnswer !== null ?
+        workingDir + '/' + testcase.userAnswer : null;
+
+    if (inputFilePath !== null)
+        currentCaseSubmit.input = await readFileLength(inputFilePath, Config.dataDisplayLimit);
+
+    if (answerFilePath !== null)
+        currentCaseSubmit.answer = await readFileLength(answerFilePath, Config.dataDisplayLimit);
+
+    currentCaseSubmit.userOutput = await readFileLength(userAnswerFilePath, Config.dataDisplayLimit);
+    currentCaseSubmit.pending = false;
+    currentCaseSubmit.time = 0;
+    currentCaseSubmit.memory = 0;
+
+    await createOrEmptyDir(spjWorkingDir);
+    try {
+        console.log("UserAnswer: " + userAnswerFilePath);
+        await fse.move(userAnswerFilePath, spjWorkingDir + '/user_out');
+    } catch (e) {
+        if (e.code === 'ENOENT') {
+            currentCaseSubmit.status = StatusType.FileError;
+        }
+    }
+
+    if (currentCaseSubmit.status === StatusType.Running) {
+        if (answerFilePath !== null)
+            await fse.copy(answerFilePath, spjWorkingDir + '/answer');
+        if (spjLanguage !== null) {
+            if (inputFilePath !== null)
+                await fse.copy(inputFilePath, spjWorkingDir + '/input');
+            const spjResult = await runSpj(spjLanguage);
+            currentCaseSubmit.score = spjResult.score;
+            currentCaseSubmit.status = spjResult.status;
+            currentCaseSubmit.spjMessage = spjResult.message;
+        } else {
+            const diffResult = await runDiff(spjWorkingDir, 'user_out', 'answer');
+            currentCaseSubmit.score = diffResult.pass ? Config.fullScore : 0;
+            currentCaseSubmit.status = diffResult.pass ? StatusType.Accepted : StatusType.WrongAnswer;
+            currentCaseSubmit.spjMessage = diffResult.message;
+        }
+    }
+}
 async function judgeTestCaseStandard(testcase: TestCaseJudge,
     testDataPath: string,
     currentCaseSubmit: TestCaseSubmit,
@@ -339,19 +391,35 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
 export async function judgeSubmitAnswer(task: SubmitAnswerTask, userData: Buffer, reportProgress: (p: JudgeResult) => Promise<void>) {
     const testDataPath = Config.testDataDirectory + '/' + task.testdata;
     const testData = await readRulesFile(testDataPath);
-    if (testData === null || testData.spjLanguage === null) {
+    if (testData === null) {
         return { status: StatusType.NoTestdata };
     }
 
-    await createOrEmptyDir(spjBinDir);
-    await reportProgress({ status: StatusType.Compiling });
-    const spjCode = await fse.readFile(testDataPath + '/spj_' + testData.spjLanguage.name + '.' + testData.spjLanguage.fileExtension, 'utf8');
-    const spjCompilationResult = await compile(spjCode, testData.spjLanguage, spjBinDir);
-    if (!spjCompilationResult.ok) {
-        return {
-            status: StatusType.JudgementFailed,
-            compilationErrorMessage: spjCompilationResult.message
-        };
-    }
+    try {
+        await createOrEmptyDir(workingDir);
+        await decompress(userData, workingDir);
 
+        if (testData.spjLanguage !== null) {
+            await createOrEmptyDir(spjBinDir);
+            await reportProgress({ status: StatusType.Compiling });
+            const spjCode = await fse.readFile(testDataPath + '/spj_' + testData.spjLanguage.name + '.' + testData.spjLanguage.fileExtension, 'utf8');
+            const spjCompilationResult = await compile(spjCode, testData.spjLanguage, spjBinDir);
+            if (!spjCompilationResult.ok) {
+                return {
+                    status: StatusType.JudgementFailed,
+                    compilationErrorMessage: spjCompilationResult.message
+                };
+            }
+        }
+
+        const judgeResult = await processJudgement(testData.subtasks, reportProgress, async (curCase, curCaseSubmit) => {
+            await judgeTestCaseSubmitAnswer(curCase, testDataPath, curCaseSubmit, task, testData.spjLanguage);
+        });
+
+        return judgeResult;
+    } finally {
+        await tryEmptyDir(spjBinDir);
+        await tryEmptyDir(spjWorkingDir);
+        await tryEmptyDir(workingDir);
+    }
 }
