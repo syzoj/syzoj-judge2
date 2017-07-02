@@ -36,10 +36,10 @@ export function parseRules(content: string): SubtaskJudge[] {
     // Something like sum:1 2 3 is acceptable for both haveSubtask and noSubtask,
     // so we match haveSubtask first.
 
-    const haveSubtaskJudge = /^((?:(?:sum|min|mul):\d+ +(?:\S+ +)*\S+ *\n+)+)\n*(.+?)\s*\n+(.+?)\s*\n*(?:\n+(.+))?$/g;
+    const haveSubtaskJudge = /^((?:(?:sum|min|mul):\d+ +(?:\S+ +)*\S+ *(?:\r?\n)+)+)(?:\r?\n)*(.+?)\s*(?:\r?\n)+(.+?)\s*(?:\r?\n)*(?:(?:\r?\n)+(.+))?$/g;
     const match_haveSubTask = haveSubtaskJudge.exec(content);
     if (match_haveSubTask) {
-        const subtaskRegex = /(sum|min|mul):(\d+) +((?:\S+ )*\S+) *\n+/g;
+        const subtaskRegex = /(sum|min|mul):(\d+) +((?:\S+ )*\S+) *(?:\r?\n)+/g;
         console.log("Match: " + match_haveSubTask);
         const inputFileName = match_haveSubTask[2];
         const outputFileName = match_haveSubTask[3];
@@ -71,7 +71,7 @@ export function parseRules(content: string): SubtaskJudge[] {
         return subtasks;
     }
 
-    const noSubtaskJudge = /^\n*((?:\S+ +)*\S+) *\n+(.+?)\s*\n+(.+?)\s*\n*$/g;
+    const noSubtaskJudge = /^\n*((?:\S+ +)*\S+) *(?:\r?\n)+(.+?)\s*(?:\r?\n)+(.+?)\s*(?:\r?\n)*$/g;
     const match_NoSubtaskJudge = noSubtaskJudge.exec(content);
     if (match_NoSubtaskJudge !== null) {
         const inputFileName = match_NoSubtaskJudge[2];
