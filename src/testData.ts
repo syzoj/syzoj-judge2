@@ -71,18 +71,20 @@ export function parseRules(content: string): SubtaskJudge[] {
         return subtasks;
     }
 
-    const noSubtaskJudge = /^\n*((?:\S+ +)*\S+) *(?:\r?\n)+(.+?)\s*(?:\r?\n)+(.+?)\s*(?:\r?\n)*$/g;
+    const noSubtaskJudge = /^\n*((?:\S+ +)*\S+) *(?:\r?\n)+(.+?)\s*(?:\r?\n)+(.+?)\s*(.+?)\s*(?:\r?\n)+(?:\r?\n)*$/g;
     const match_NoSubtaskJudge = noSubtaskJudge.exec(content);
     if (match_NoSubtaskJudge !== null) {
         const inputFileName = match_NoSubtaskJudge[2];
         const outputFileName = match_NoSubtaskJudge[3];
+        const answerFileName = match_NoSubtaskJudge[4] != undefined ? match_NoSubtaskJudge[4] : '-';
         const subtask: SubtaskJudge = {
             type: SubtaskScoringType.Summation,
             score: 100,
             cases: match_NoSubtaskJudge[1].split(' ').filter(v => v.trim() != '')
                 .map(s => ({
                     input: filterHyphen(inputFileName.replace('#', s)),
-                    output: filterHyphen(outputFileName.replace('#', s))
+                        output: filterHyphen(outputFileName.replace('#', s)),
+                        userAnswer: filterHyphen(answerFileName.replace('#', s))
                 }))
         };
         return [subtask];
