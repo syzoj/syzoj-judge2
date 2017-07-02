@@ -10,6 +10,7 @@ export enum SubtaskScoringType {
 export interface TestCaseJudge {
     input: string;
     output: string;
+    userAnswer?: string;
 }
 
 export interface SubtaskJudge {
@@ -19,6 +20,7 @@ export interface SubtaskJudge {
 }
 
 export interface TestData {
+    path: string;
     subtasks: SubtaskJudge[];
     spjLanguage?: Language;
 }
@@ -112,7 +114,8 @@ export async function readRulesFile(path: string): Promise<TestData> {
     if (fileContent !== null) {
         return {
             subtasks: parseRules(fileContent),
-            spjLanguage: spjLanguage
+            spjLanguage: spjLanguage,
+            path: path
         };
     } else {
         let cases: TestCaseJudge[] = [];
@@ -146,7 +149,8 @@ export async function readRulesFile(path: string): Promise<TestData> {
                 type: SubtaskScoringType.Summation,
                 cases: cases
             }],
-            spjLanguage: spjLanguage
+            spjLanguage: spjLanguage,
+            path: path
         };
     }
 
