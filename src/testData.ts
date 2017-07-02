@@ -33,35 +33,17 @@ function filterHyphen(input: string): string {
 }
 
 export function parseRules(content: string): SubtaskJudge[] {
-    // This matches for direct data rule
-    // For example,
-    // 1 2 3 4 5
-    // input#.in
-    // output#.out
-    const noSubtaskJudge = /^\n*((?:\d+\s+)*\d+)\s*\n+(.+?)\s*\n+(.+?)\s*\n*$/g;
-    const match_NoSubtaskJudge = noSubtaskJudge.exec(content);
-    if (match_NoSubtaskJudge !== null) {
-        const inputFileName = match_NoSubtaskJudge[2];
-        const outputFileName = match_NoSubtaskJudge[3];
-        const subtask: SubtaskJudge = {
-            type: SubtaskScoringType.Summation,
-            score: 100,
-            cases: match_NoSubtaskJudge[1].split(' ')
-                .map(s => ({
-                    input: filterHyphen(inputFileName.replace('#', s)),
-                    output: filterHyphen(outputFileName.replace('#', s))
-                }))
-        };
-        return [subtask];
-    }
+    // Something like sum:1 2 3 is acceptable for both haveSubtask and noSubtask,
+    // so we match haveSubtask first.
 
-    const haveSubtaskJudge = /^((?:(?:sum|min|mul):\d+\s+(?:\d+\s)*\d+\s*\n+)+)\n*(.+?)\s*\n+(.+?)\s*\n*(?:\n+(.+))?$/g;
+    const haveSubtaskJudge = /^((?:(?:sum|min|mul):\d+ +(?:\S+ +)*\S+ *\n+)+)\n*(.+?)\s*\n+(.+?)\s*\n*(?:\n+(.+))?$/g;
     const match_haveSubTask = haveSubtaskJudge.exec(content);
     if (match_haveSubTask) {
-        const subtaskRegex = /(sum|min|mul):(\d+)\s+((?:\d+\s)*\d+)\s*\n+/g;
+        const subtaskRegex = /(sum|min|mul):(\d+) +((?:\S+ )*\S+) *\n+/g;
+        console.log("Match: " + match_haveSubTask);
         const inputFileName = match_haveSubTask[2];
         const outputFileName = match_haveSubTask[3];
-        const answerFileName = match_haveSubTask.length >= 5 ? match_haveSubTask[4] : null;
+        const answerFileName = match_haveSubTask[4] != undefined ? match_haveSubTask[4] : '-';
         const subtasks: SubtaskJudge[] = [];
         let subtaskMatch: RegExpExecArray;
         while ((subtaskMatch = subtaskRegex.exec(match_haveSubTask[1])) !== null) {
@@ -87,6 +69,23 @@ export function parseRules(content: string): SubtaskJudge[] {
         }
 
         return subtasks;
+    }
+
+    const noSubtaskJudge = /^\n*((?:\S+ +)*\S+) *\n+(.+?)\s*\n+(.+?)\s*\n*$/g;
+    const match_NoSubtaskJudge = noSubtaskJudge.exec(content);
+    if (match_NoSubtaskJudge !== null) {
+        const inputFileName = match_NoSubtaskJudge[2];
+        const outputFileName = match_NoSubtaskJudge[3];
+        const subtask: SubtaskJudge = {
+            type: SubtaskScoringType.Summation,
+            score: 100,
+            cases: match_NoSubtaskJudge[1].split(' ').filter(v => v.trim() != '')
+                .map(s => ({
+                    input: filterHyphen(inputFileName.replace('#', s)),
+                    output: filterHyphen(outputFileName.replace('#', s))
+                }))
+        };
+        return [subtask];
     }
     throw new Error("Unable to parse rules file!");
 }
