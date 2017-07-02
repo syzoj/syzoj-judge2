@@ -350,7 +350,7 @@ async function processJudgement(subtasks: SubtaskJudge[],
                 currentCaseSubmit.pending = false;
             }
             const scores = currentSubtaskResult.testcases.map(t => t.score);
-            currentSubtaskResult.score = calculateSubtaskScore(subtask.type, scores, subtask.cases.length);
+            currentSubtaskResult.score = calculateSubtaskScore(subtask.type, scores, subtask.cases.length) / Config.fullScore * subtask.score;
         }
     }
     return judgeResult;

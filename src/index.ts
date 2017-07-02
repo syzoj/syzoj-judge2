@@ -17,7 +17,7 @@ function convertJudgeResult(input: JudgeResult) {
         result.max_memory = _.max(input.subtasks.map(s => _.max(s.testcases.map(t => t.memory))));
         result.total_time = _.sum(input.subtasks.map(s => _.sum(s.testcases.map(t => t.time))));
 
-        result.score = Math.round(_.sum(input.subtasks.map(val => val.score)) / input.subtasks.length);
+        result.score = Math.round(_.sum(input.subtasks.map(val => val.score)));
         result.subtasks = input.subtasks.map(val => {
             let result;
             if (val.testcases.length > 0) {
