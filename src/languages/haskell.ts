@@ -10,7 +10,7 @@ export const lang =  {
         // write a shell script or some other stuff, 
         // and put it to your sandbox.
 		executable: "/usr/bin/compile-haskell",
-		parameters: ["compile-haskell", sourcePath, "-o", outputDirectory, `${outputDirectory}/a.out`],
+		parameters: ["compile-haskell", sourcePath, outputDirectory, `${outputDirectory}/a.out`],
         time: 5000,
         memory: 1024 * 1024 * 1024,
         process: 20,
