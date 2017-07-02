@@ -25,7 +25,8 @@ export enum StatusType {
     FileError,
     RuntimeError,
     Waiting,
-    JudgementFailed
+    JudgementFailed,
+    Skipped
 }
 
 export interface TestCaseSubmit {
@@ -70,6 +71,7 @@ statusToString[StatusType.NoTestdata] = "No Testdata";
 statusToString[StatusType.JudgementFailed] = "Judgement Failed";
 statusToString[StatusType.Running] = "Running";
 statusToString[StatusType.Waiting] = "Waiting";
+statusToString[StatusType.Skipped] = "Waiting";
 
 const tempErrFile = "~user.err";
 
@@ -320,6 +322,7 @@ async function processJudgement(subtasks: SubtaskJudge[],
         const currentSubtaskResult = judgeResult.subtasks[subtaskIndex];
         const subtask = subtasks[subtaskIndex];
         currentSubtaskResult.status = StatusType.Running;
+        let skipCurrent = false;
         for (let index = 0; index < subtask.cases.length; index++) {
             const testcase = subtask.cases[index];
             const currentCaseSubmit = {
@@ -336,9 +339,15 @@ async function processJudgement(subtasks: SubtaskJudge[],
                 answer: '',
             };
             currentSubtaskResult.testcases.push(currentCaseSubmit);
-            await reportProgress(judgeResult);
-
-            await judgeTestCase(testcase, currentCaseSubmit);
+            if (!skipCurrent) {
+                await reportProgress(judgeResult);
+                await judgeTestCase(testcase, currentCaseSubmit);
+                if (subtask.type === SubtaskScoringType.Minimum && currentCaseSubmit.score === 0) {
+                    skipCurrent = true;
+                }
+            } else {
+                currentCaseSubmit.status = StatusType.Skipped;
+            }
             const scores = currentSubtaskResult.testcases.map(t => t.score);
             currentSubtaskResult.score = calculateSubtaskScore(subtask.type, scores, subtask.cases.length);
         }
