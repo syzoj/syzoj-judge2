@@ -71,7 +71,7 @@ statusToString[StatusType.NoTestdata] = "No Testdata";
 statusToString[StatusType.JudgementFailed] = "Judgement Failed";
 statusToString[StatusType.Running] = "Running";
 statusToString[StatusType.Waiting] = "Waiting";
-statusToString[StatusType.Skipped] = "Waiting";
+statusToString[StatusType.Skipped] = "Skipped";
 
 const tempErrFile = "~user.err";
 
@@ -347,6 +347,7 @@ async function processJudgement(subtasks: SubtaskJudge[],
                 }
             } else {
                 currentCaseSubmit.status = StatusType.Skipped;
+                currentCaseSubmit.pending = false;
             }
             const scores = currentSubtaskResult.testcases.map(t => t.score);
             currentSubtaskResult.score = calculateSubtaskScore(subtask.type, scores, subtask.cases.length);
