@@ -13,11 +13,11 @@ export function setWriteAccess(dirName: string, writeAccess: boolean): Promise<v
         klaw(dirName).on('data', (item) => {
             operations.push((async () => {
                 const path = item.path;
-                await fse.chmod(path, 0o755);
+                await fse.lchmod(path, 0o755);
                 if (writeAccess) {
-                    await fse.chown(path, user.uid, user.gid);
+                    await fse.lchown(path, user.uid, user.gid);
                 } else {
-                    await fse.chown(path, process.getuid(), process.getgid());
+                    await fse.lchown(path, process.getuid(), process.getgid());
                 }
             })());
         }).on('end', () => {
