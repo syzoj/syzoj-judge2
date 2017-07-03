@@ -78,7 +78,7 @@ export async function compile(source: string, language: Language, targetDir: str
         } else {
             result = {
                 ok: false,
-                message: (`A ${SandboxStatus[sandboxResult.status]} encountered when compiling your code.\n\n` + await readFileLength(binDir + '/' + compileConfig.messageFile, Config.compilerMessageLimit)).trim()
+                message: (`A ${SandboxStatus[sandboxResult.status]} encountered while compiling your code.\n\n` + await readFileLength(binDir + '/' + compileConfig.messageFile, Config.compilerMessageLimit)).trim()
             };
         }
     } finally {
