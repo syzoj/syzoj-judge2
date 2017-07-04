@@ -36,10 +36,10 @@ export function parseRules(content: string): SubtaskJudge[] {
     // Something like sum:1 2 3 is acceptable for both haveSubtask and noSubtask,
     // so we match haveSubtask first.
 
-    const haveSubtaskJudge = /^((?:(?:sum|min|mul):\d+ +(?:\S+ +)*\S+ *(?:\r?\n)+)+)(?:\r?\n)*(.+?)\s*(?:\r?\n)+(.+?)\s*(?:\r?\n)*(?:(?:\r?\n)+(.+))?$/g;
+    const haveSubtaskJudge = /^((?:(?:sum|min|mul):\d+\.?\d* +(?:\S+ +)*\S+ *(?:\r?\n)+)+)(?:\r?\n)*(.+?)\s*(?:\r?\n)+(.+?)\s*(?:\r?\n)*(?:(?:\r?\n)+(.+))?$/g;
     const match_haveSubTask = haveSubtaskJudge.exec(content);
     if (match_haveSubTask) {
-        const subtaskRegex = /(sum|min|mul):(\d+) +((?:\S+ )*\S+) *(?:\r?\n)+/g;
+        const subtaskRegex = /(sum|min|mul):(\d+\.?\d*) +((?:\S+ )*\S+) *(?:\r?\n)+/g;
         const inputFileName = match_haveSubTask[2];
         const outputFileName = match_haveSubTask[3];
         const answerFileName = match_haveSubTask[4] != undefined ? match_haveSubTask[4] : '-';
