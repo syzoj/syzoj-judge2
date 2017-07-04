@@ -342,7 +342,8 @@ async function processJudgement(subtasks: SubtaskJudge[],
             if (!skipCurrent) {
                 await reportProgress(judgeResult);
                 await judgeTestCase(testcase, currentCaseSubmit);
-                if (subtask.type === SubtaskScoringType.Minimum && currentCaseSubmit.score === 0) {
+                if ([SubtaskScoringType.Minimum, SubtaskScoringType.Multiple].includes(subtask.type)
+                    && currentCaseSubmit.score === 0) {
                     skipCurrent = true;
                 }
             } else {
