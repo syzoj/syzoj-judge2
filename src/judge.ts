@@ -41,6 +41,7 @@ export interface TestCaseSubmit {
     score: number;
     userError: string;
     spjMessage: string;
+    runnerMessage: string;
 }
 
 export interface SubtaskSubmit {
@@ -251,9 +252,12 @@ async function judgeTestCaseStandard(testcase: TestCaseJudge,
     } else if (runResult.result.status === SandboxStatus.MemoryLimitExceeded) {
         currentCaseSubmit.status = StatusType.MemoryLimitExceeded;
     } else if (runResult.result.status === SandboxStatus.RuntimeError) {
+        currentCaseSubmit.runnerMessage = `Signaled by signal ${runResult.result.code}`;
         currentCaseSubmit.status = StatusType.RuntimeError;
     } else if (runResult.result.status !== SandboxStatus.OK) {
         currentCaseSubmit.status = StatusType.RuntimeError;
+    } else {
+        currentCaseSubmit.runnerMessage = `Exited with return code ${runResult.result.code}`;
     }
 
     currentCaseSubmit.userError = await readFileLength(workingDir + '/' + tempErrFile, Config.stderrDisplayLimit);

@@ -52,7 +52,8 @@ function convertJudgeResult(input: JudgeResult) {
                             answer: testcase.answer,
                             score: Math.round(testcase.score),
                             user_err: testcase.userError,
-                            spj_message: testcase.spjMessage
+                            spj_message: testcase.spjMessage,
+                            runner_message: testcase.runnerMessage
                         };
                     }
                 }
