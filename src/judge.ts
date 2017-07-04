@@ -366,7 +366,12 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
     Promise<JudgeResult> {
     const language = languages.find(l => l.name === task.language);
     const testDataPath = Config.testDataDirectory + '/' + task.testdata;
-    const testData = await readRulesFile(testDataPath);
+    let testData = null;
+    try {
+        testData = await readRulesFile(testDataPath);
+    } catch (e) {
+        console.log(`Error parsing testdata ${task.testdata}: ${e}`);
+    }
     if (testData === null) {
         return { status: StatusType.NoTestdata };
     }
