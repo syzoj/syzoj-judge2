@@ -96,10 +96,10 @@ function convertJudgeResult(input: JudgeResult) {
 
         default:
             // If running, the status will be overwritten
-            if (result.subtasks.every(s => s.status === StatusType.Accepted)) {
-                result.status = StatusType[StatusType.Accepted];
+            if (result.subtasks.every(s => s.status === statusToString[StatusType.Accepted])) {
+                result.status = statusToString[StatusType.Accepted];
             } else {
-                result.status = result.subtasks.find(s => s.status !== StatusType.Accepted).status;
+                result.status = result.subtasks.find(s => s.status !== statusToString[StatusType.Accepted]).status;
             }
             break;
     }
