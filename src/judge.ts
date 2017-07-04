@@ -341,6 +341,7 @@ async function processJudgement(subtasks: SubtaskJudge[],
                 score: 0,
                 spjMessage: '',
                 answer: '',
+                runnerMessage: ''
             };
             currentSubtaskResult.testcases.push(currentCaseSubmit);
             if (!skipCurrent) {
