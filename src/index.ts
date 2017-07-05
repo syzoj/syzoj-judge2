@@ -53,7 +53,9 @@ function convertJudgeResult(input: JudgeResult) {
                             score: Math.round(testcase.score),
                             user_err: testcase.userError,
                             spj_message: testcase.spjMessage,
-                            runner_message: testcase.runnerMessage
+                            runner_message: testcase.runnerMessage,
+                            input_file_name: testcase.inputFileName,
+                            output_file_name: testcase.outputFileName
                         };
                     }
                 }

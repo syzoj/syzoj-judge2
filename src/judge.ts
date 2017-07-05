@@ -42,6 +42,8 @@ export interface TestCaseSubmit {
     userError: string;
     spjMessage: string;
     runnerMessage: string;
+    inputFileName: string;
+    outputFileName: string;
 }
 
 export interface SubtaskSubmit {
@@ -329,7 +331,7 @@ async function processJudgement(subtasks: SubtaskJudge[],
         let skipCurrent = false;
         for (let index = 0; index < subtask.cases.length; index++) {
             const testcase = subtask.cases[index];
-            const currentCaseSubmit = {
+            const currentCaseSubmit : TestCaseSubmit = {
                 id: index + 1,
                 status: StatusType.Running,
                 pending: true,
@@ -341,7 +343,9 @@ async function processJudgement(subtasks: SubtaskJudge[],
                 score: 0,
                 spjMessage: '',
                 answer: '',
-                runnerMessage: ''
+                runnerMessage: '',
+                inputFileName: testcase.input,
+                outputFileName: testcase.output
             };
             currentSubtaskResult.testcases.push(currentCaseSubmit);
             if (!skipCurrent) {
