@@ -5,6 +5,7 @@ import { SandboxParameter, MountInfo } from 'simple-sandbox/src/interfaces';
 import * as posix from 'posix';
 import * as klaw from 'klaw';
 import * as pathLib from 'path';
+import * as through2 from 'through2';
 
 export function setWriteAccess(dirName: string, writeAccess: boolean): Promise<void> {
     const user = posix.getpwnam(Config.sandbox.user);
@@ -43,8 +44,7 @@ export function cloneObject<T>(src: T): T {
 
 export function sandboxize(execParam: ExecParam, mounts: MountInfo[]): SandboxParameter {
     const result = Object.assign(cloneObject(execParam), Config.sandbox);
-    result.mounts = mounts;
-    return result;
+    return Object.assign(result, { mounts: mounts });
 }
 
 export function fileTooLongPrompt(actualSize: number, bytesRead: number): string {
