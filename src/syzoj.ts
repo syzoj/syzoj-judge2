@@ -28,14 +28,15 @@ export async function getJudgeTask(): Promise<any> {
     do {
         try {
             task = (await rp({
-                uri: url.resolve(config.syzoj_url, '/api/waiting_judge'),
+                uri: url.resolve(config.webUrl, '/api/waiting_judge'),
                 qs: {
-                    'session_id': config.judge_token
+                    'session_id': config.webToken
                 },
+                method: 'POST',
                 json: true,
                 jar: true
             })) as any;
-        } catch (e) { }
+        } catch (e) { console.log(e); }
 
         await Bluebird.delay(config.delay);
     } while (!task || task.have_task === 0);
@@ -45,13 +46,13 @@ export async function getJudgeTask(): Promise<any> {
 
 export async function uploadJudgeResult(task: JudgeTask, result: any) {
     return await rp({
-        uri: url.resolve(config.syzoj_url, '/api/update_judge/' + task.judge_id),
+        uri: url.resolve(config.webUrl, '/api/update_judge/' + task.judge_id),
         method: 'POST',
         body: {
             result: JSON.stringify(result)
         },
         qs: {
-            session_id: config.judge_token
+            session_id: config.webToken
         },
         json: true,
         jar: true
@@ -60,7 +61,7 @@ export async function uploadJudgeResult(task: JudgeTask, result: any) {
 
 export async function downloadUserAnswer(id: string): Promise<Buffer> {
     return await rp({
-        uri: url.resolve(config.syzoj_url, '/static/uploads/answer/' + id),
+        uri: url.resolve(config.webUrl, '/static/uploads/answer/' + id),
         method: 'GET',
         encoding: null
     });

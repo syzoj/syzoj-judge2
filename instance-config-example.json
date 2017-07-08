@@ -1,0 +1,4 @@
+{
+    "workingDirectory": "/mnt/syzoj-tmp",
+    "sandboxCgroup": "syzoj-1"
+}
