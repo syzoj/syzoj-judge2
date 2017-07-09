@@ -28,7 +28,7 @@ export async function getJudgeTask(): Promise<any> {
     do {
         try {
             task = (await rp({
-                uri: url.resolve(config.webUrl, '/api/waiting_judge'),
+                uri: url.resolve(config.webUrl, '/api/v2/judge/peek'),
                 qs: {
                     'session_id': config.webToken
                 },
@@ -46,7 +46,7 @@ export async function getJudgeTask(): Promise<any> {
 
 export async function uploadJudgeResult(task: JudgeTask, result: any) {
     return await rp({
-        uri: url.resolve(config.webUrl, '/api/update_judge/' + task.judge_id),
+        uri: url.resolve(config.webUrl, '/api/v2/judge/update/' + task.judge_id),
         method: 'POST',
         body: {
             result: JSON.stringify(result)
