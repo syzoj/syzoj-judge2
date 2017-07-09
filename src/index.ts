@@ -1,6 +1,7 @@
 import { getJudgeTask, uploadJudgeResult, downloadUserAnswer } from './syzoj';
 import { judgeStandard, judgeSubmitAnswer, StatusType, TestCaseSubmit, SubtaskSubmit, JudgeResult, statusToString } from './judge';
 import * as _ from 'lodash';
+import * as util from 'util';
 
 function convertJudgeResult(input: JudgeResult) {
     let result = {
@@ -11,7 +12,8 @@ function convertJudgeResult(input: JudgeResult) {
         pending: false,
         compiler_output: '',
         spj_compiler_output: '',
-        subtasks: []
+        subtasks: [],
+        message: null
     }
     if (input.subtasks && input.subtasks.length > 0) {
         result.max_memory = _.max(input.subtasks.map(s => _.max(s.testcases.map(t => t.memory))));
@@ -97,6 +99,12 @@ function convertJudgeResult(input: JudgeResult) {
             }
             break;
 
+        case StatusType.NoTestdata:
+            if (input.systemMessage) {
+                result.message = input.systemMessage;
+            }
+            break;
+
         default:
             // If running, the status will be overwritten
             if (result.subtasks.every(s => s.status === statusToString[StatusType.Accepted])) {
@@ -140,10 +148,8 @@ function convertJudgeResult(input: JudgeResult) {
         } catch (e) {
             await uploadJudgeResult(task, {
                 status: "System Error",
+                message: util.inspect(e),
                 score: 0,
-                total_time: 0,
-                max_memory: 0,
-                case_num: 0,
                 pending: false
             });
             console.log(e);

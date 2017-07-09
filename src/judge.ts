@@ -9,6 +9,7 @@ import * as _ from 'lodash';
 import * as decompress from 'decompress';
 import { SandboxStatus, SandboxResult } from 'simple-sandbox/lib/interfaces';
 import { TestData, TestCaseJudge, SubtaskJudge, SubtaskScoringType, readRulesFile } from './testData';
+import * as util from 'util';
 
 export enum StatusType {
     Compiling,
@@ -55,6 +56,7 @@ export interface SubtaskSubmit {
 
 export interface JudgeResult {
     status: StatusType;
+    systemMessage?: string;
     compilationErrorMessage?: string;
     subtasks?: SubtaskSubmit[];
 }
@@ -331,7 +333,7 @@ async function processJudgement(subtasks: SubtaskJudge[],
         let skipCurrent = false;
         for (let index = 0; index < subtask.cases.length; index++) {
             const testcase = subtask.cases[index];
-            const currentCaseSubmit : TestCaseSubmit = {
+            const currentCaseSubmit: TestCaseSubmit = {
                 id: index + 1,
                 status: StatusType.Running,
                 pending: true,
@@ -374,8 +376,12 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
     try {
         testData = await readRulesFile(testDataPath);
     } catch (e) {
-        console.log(`Error parsing testdata ${task.testdata}: ${e}`);
+        return {
+            status: StatusType.NoTestdata,
+            systemMessage: util.inspect(e)
+        };
     }
+
     if (testData === null) {
         return { status: StatusType.NoTestdata };
     }
