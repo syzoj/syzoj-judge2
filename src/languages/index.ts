@@ -44,5 +44,6 @@ export const languages : Language[] = [
     require('./python3'),
     require('./ruby'),
     require('./vala'),
+    require('./elixir'),
     require('./vbnet')
 ].map(f => f.lang);
