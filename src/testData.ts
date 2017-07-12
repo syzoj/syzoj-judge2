@@ -1,5 +1,6 @@
 import * as fse from 'fs-extra';
 import { Language, languages } from './languages';
+import { compareStringByNumber } from './utils';
 
 export enum SubtaskScoringType {
     Summation,
@@ -82,14 +83,15 @@ export function parseRules(content: string): SubtaskJudge[] {
             cases: match_NoSubtaskJudge[1].split(' ').filter(v => v.trim() != '')
                 .map(s => ({
                     input: filterHyphen(inputFileName.replace('#', s)),
-                        output: filterHyphen(outputFileName.replace('#', s)),
-                        userAnswer: filterHyphen(answerFileName.replace('#', s))
+                    output: filterHyphen(outputFileName.replace('#', s)),
+                    userAnswer: filterHyphen(answerFileName.replace('#', s))
                 }))
         };
         return [subtask];
     }
     throw new Error("Unable to parse rules file!");
 }
+
 
 export async function readRulesFile(path: string): Promise<TestData> {
     let fileContent: string;
@@ -118,7 +120,7 @@ export async function readRulesFile(path: string): Promise<TestData> {
             path: path
         };
     } else {
-        let cases: TestCaseJudge[] = [];
+        let cases: { input: string, output: string, filePrefix: string }[] = [];
         for (let fileName of await fse.readdir(path)) {
             let outputFileName = null;
 
@@ -136,13 +138,18 @@ export async function readRulesFile(path: string): Promise<TestData> {
                 }
                 // Found output file
                 if (outputFileName !== null) {
+
                     cases.push({
                         input: filePrefix + '.in',
-                        output: outputFileName
+                        output: outputFileName,
+                        filePrefix: filePrefix
                     });
                 }
             }
         }
+
+        cases.sort((a, b) => compareStringByNumber(a.filePrefix, b.filePrefix));
+
         return cases.length === 0 ? null : {
             subtasks: [{
                 score: 100,

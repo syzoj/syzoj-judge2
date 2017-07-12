@@ -79,3 +79,19 @@ export async function tryEmptyDir(path: string) {
         await fse.emptyDir(path);
     } catch (e) { }
 }
+
+// By Pisces
+function extractNumerals(s: string): Number[] {
+    return (s.match(/\d+/g) || []).map((x) => parseInt(x));
+}
+
+export function compareStringByNumber(a: string, b: string) {
+    const acmp = extractNumerals(a), bcmp = extractNumerals(b);
+    for (let i = 0; i < Math.min(acmp.length, bcmp.length); i++) {
+        if (acmp[i] > bcmp[i])
+            return 1;
+        else if (acmp[i] < bcmp[i])
+            return -1;
+    }
+    return a > b ? 1 : -1;
+}
