@@ -142,7 +142,7 @@ export const lang =  {
 
 
 
-        parameters: ["elixir", `${binaryDirectory}/a.ex`, "-e Main.main()"],
+        parameters: ["elixir", `${binaryDirectory}/a.ex`, "-e \"Main.main()\""],
 
 
 
