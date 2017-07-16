@@ -487,7 +487,7 @@ nan@2.4.x:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.4.0.tgz#fb3c59d45fe4effe215f0b890f8adf6eb32d2232"
 
-nan@^2.6.2:
+nan@^2.0.5, nan@^2.6.2:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.6.2.tgz#e4ff34e6c95fdfb5aecc08de6596f43605a7db45"
 
@@ -638,9 +638,9 @@ seek-bzip@^1.0.5:
   dependencies:
     commander "~2.8.1"
 
-simple-sandbox@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/simple-sandbox/-/simple-sandbox-0.3.0.tgz#cab0cf7981be5abb8b86e94be7f7cac1da3349fe"
+simple-sandbox@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/simple-sandbox/-/simple-sandbox-0.3.1.tgz#b08333d99fa084d6fbfabb7541d73a44c1d65823"
   dependencies:
     bindings "^1.2.1"
     nan "^2.6.2"
@@ -689,6 +689,12 @@ strip-dirs@^2.0.0:
   resolved "https://registry.yarnpkg.com/strip-dirs/-/strip-dirs-2.0.0.tgz#610cdb2928200da0004f41dcb90fc95cd919a0b6"
   dependencies:
     is-natural-number "^4.0.1"
+
+syspipe@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/syspipe/-/syspipe-0.1.5.tgz#4cdb3420fe59855f30fbd8f0a7cfdb22814f082e"
+  dependencies:
+    nan "^2.0.5"
 
 tar-stream@^1.5.2:
   version "1.5.4"
