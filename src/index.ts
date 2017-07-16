@@ -1,5 +1,5 @@
 import { getJudgeTask, uploadJudgeResult, downloadUserAnswer } from './syzoj';
-import { judgeStandard, judgeSubmitAnswer, StatusType, TestCaseSubmit, SubtaskSubmit, JudgeResult, statusToString } from './judge';
+import { judgeStandard, judgeSubmitAnswer, StatusType, judgeInteraction, TestCaseSubmit, SubtaskSubmit, JudgeResult, statusToString } from './judge';
 import * as _ from 'lodash';
 import * as util from 'util';
 
@@ -133,6 +133,11 @@ function convertJudgeResult(input: JudgeResult) {
             if (task.problem_type === 'submit-answer') {
                 const userData = await downloadUserAnswer(task.answer_file);
                 result = await judgeSubmitAnswer(task, userData, async result => {
+                    // let uploadResult = await uploadJudgeResult(task, result);
+                    await uploadJudgeResult(task, convertJudgeResult(result));
+                });
+            } else if (task.problem_type === 'interaction') {
+                result = await judgeInteraction(task, async result => {
                     // let uploadResult = await uploadJudgeResult(task, result);
                     await uploadJudgeResult(task, convertJudgeResult(result));
                 });

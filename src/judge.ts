@@ -1,7 +1,7 @@
 import { JudgeTask, SubmitAnswerTask } from './syzoj';
 import { compile } from './compile';
 import { config as Config } from './config';
-import { createOrEmptyDir, readFileLength, tryEmptyDir } from './utils';
+import { createOrEmptyDir, readFileLength, tryEmptyDir, tryReadFile } from './utils';
 import { languages, Language } from './languages';
 import { runProgram, runDiff } from './run';
 import * as fse from 'fs-extra';
@@ -11,6 +11,8 @@ import { SandboxStatus, SandboxResult } from 'simple-sandbox/lib/interfaces';
 import { TestData, TestCaseJudge, SubtaskJudge, SubtaskScoringType, readRulesFile } from './testData';
 import * as util from 'util';
 import * as path from 'path';
+// TODO: TypeScript doesn't seem to be able to find this module?
+const syspipe = require('syspipe');
 
 export enum StatusType {
     Compiling,
@@ -28,7 +30,8 @@ export enum StatusType {
     RuntimeError,
     Waiting,
     JudgementFailed,
-    Skipped
+    Skipped,
+    InvalidInteraction
 }
 
 export interface TestCaseSubmit {
@@ -78,6 +81,7 @@ statusToString[StatusType.JudgementFailed] = "Judgement Failed";
 statusToString[StatusType.Running] = "Running";
 statusToString[StatusType.Waiting] = "Waiting";
 statusToString[StatusType.Skipped] = "Skipped";
+statusToString[StatusType.Skipped] = "InvalidInteraction";
 
 const tempErrFile = "~user.err";
 
@@ -109,11 +113,11 @@ async function runSpj(spjLanguage: Language): Promise<SpjResult> {
             score: 0
         };
     } else {
-        const scoreString = await fse.readFile(spjWorkingDir + '/score.txt'),
+        const scoreString = await tryReadFile(path.join(spjWorkingDir, 'score.txt')),
             score = Number(scoreString);
         const messageString = await readFileLength(spjWorkingDir + '/message.txt', Config.dataDisplayLimit);
 
-        if (score === NaN) {
+        if ((!scoreString) || score === NaN) {
             return {
                 status: StatusType.JudgementFailed,
                 message: `Special Judge returned a non-number score: ${scoreString}.`,
@@ -298,6 +302,129 @@ async function judgeTestCaseStandard(testcase: TestCaseJudge,
     }
 }
 
+async function judgeTestCaseInteraction(testcase: TestCaseJudge,
+    testDataPath: string,
+    currentCaseSubmit: TestCaseSubmit,
+    task: JudgeTask,
+    language: Language,
+    interactorLanguage: Language): Promise<void> {
+
+    const pipe1 = null,
+        pipe2 = null;
+    try {
+        await createOrEmptyDir(spjWorkingDir);
+        await createOrEmptyDir(workingDir);
+
+        let stdin, stdout, outputFileName;
+        const inputFilePath = testcase.input !== null ?
+            path.join(testDataPath, testcase.input) : null;
+        const answerFilePath = testcase.output !== null ?
+            path.join(testDataPath, testcase.output) : null;
+
+        if (inputFilePath !== null) {
+            await fse.copy(inputFilePath,
+                path.join(spjWorkingDir, 'input'));
+        }
+        if (answerFilePath !== null) {
+            await fse.copy(answerFilePath,
+                path.join(spjWorkingDir, 'answer'));
+        }
+        await fse.writeFile(path.join(spjWorkingDir, 'code'), task.code);
+
+        if (inputFilePath !== null)
+            currentCaseSubmit.input = await readFileLength(inputFilePath, Config.dataDisplayLimit);
+        if (answerFilePath !== null)
+            currentCaseSubmit.answer = await readFileLength(answerFilePath, Config.dataDisplayLimit);
+
+        currentCaseSubmit.pending = false;
+
+        const pipe1 = syspipe.pipe(),
+            pipe2 = syspipe.pipe();
+
+        const userProgramTask = runProgram(language,
+            binDir,
+            workingDir,
+            task.time_limit,
+            task.memory_limit * 1024 * 1024,
+            pipe1.read,
+            pipe2.write,
+            tempErrFile);
+
+        const interactorTask = runProgram(interactorLanguage,
+            spjBinDir,
+            spjWorkingDir,
+            task.time_limit * 2,
+            task.memory_limit * 1024 * 1024,
+            pipe2.read,
+            pipe1.write,
+            tempErrFile);
+
+        const [userResult, interactorResult] = await Promise.all([userProgramTask, interactorTask]);
+
+        currentCaseSubmit.time = Math.round(userResult.result.time / 1e6);
+        currentCaseSubmit.memory = userResult.result.memory / 1024;
+
+        if (interactorResult.result.status !== SandboxStatus.OK) {
+            currentCaseSubmit.status = StatusType.JudgementFailed;
+            currentCaseSubmit.runnerMessage = `A ${SandboxStatus[interactorResult.result.status]} encountered while running interactor`;
+        }
+
+        currentCaseSubmit.userError = await readFileLength(path.join(workingDir, tempErrFile), Config.stderrDisplayLimit);
+        currentCaseSubmit.spjMessage = await readFileLength(path.join(spjWorkingDir, tempErrFile), Config.stderrDisplayLimit);
+
+        // If interactor exited normally
+        if (currentCaseSubmit.status === StatusType.Running) {
+            const scoreString = await tryReadFile(spjWorkingDir + '/score.txt'),
+                score = Number(scoreString);
+            if ((!scoreString) || score === NaN) {
+                currentCaseSubmit.status = StatusType.JudgementFailed;
+                currentCaseSubmit.runnerMessage = `Interactor returned a non-number score ${scoreString}`;
+            }
+            if (score === -1) {
+                currentCaseSubmit.score = 0;
+                currentCaseSubmit.status = StatusType.InvalidInteraction;
+            } else {
+                if (userResult.outputLimitExceeded) {
+                    currentCaseSubmit.status = StatusType.OutputLimitExceeded;
+                } else if (userResult.result.status === SandboxStatus.TimeLimitExceeded) {
+                    currentCaseSubmit.status = StatusType.TimeLimitExceeded;
+                } else if (userResult.result.status === SandboxStatus.MemoryLimitExceeded) {
+                    currentCaseSubmit.status = StatusType.MemoryLimitExceeded;
+                } else if (userResult.result.status === SandboxStatus.RuntimeError) {
+                    currentCaseSubmit.runnerMessage = `Signaled by signal ${userResult.result.code}`;
+                    currentCaseSubmit.status = StatusType.RuntimeError;
+                } else if (userResult.result.status !== SandboxStatus.OK) {
+                    currentCaseSubmit.status = StatusType.RuntimeError;
+                } else {
+                    currentCaseSubmit.runnerMessage = `Exited with return code ${userResult.result.code}`;
+                }
+                currentCaseSubmit.score = score;
+                if (score === Config.fullScore) {
+                    currentCaseSubmit.status = StatusType.Accepted;
+                } else if (score !== 0) {
+                    currentCaseSubmit.status = StatusType.PartiallyCorrect;
+                } else {
+                    currentCaseSubmit.status = StatusType.WrongAnswer;
+                }
+            }
+        }
+    }
+    finally {
+        const closePipe = async (p) => {
+            try {
+                if (p) {
+                    await fse.close(p.read);
+                    await fse.close(p.write);
+                }
+            } catch (e) { }
+        }
+        await closePipe(pipe1);
+        await closePipe(pipe2);
+        await tryEmptyDir(spjWorkingDir);
+        await tryEmptyDir(workingDir);
+    }
+}
+
 function calculateSubtaskScore(scoring: SubtaskScoringType, scores: number[], caseNum: number): number {
     if (scoring === SubtaskScoringType.Minimum) {
         if (scores.length !== caseNum) {
@@ -382,7 +509,6 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
             systemMessage: util.inspect(e)
         };
     }
-    console.log("Lang:: " + JSON.stringify(testData));
 
     if (testData === null) {
         return { status: StatusType.NoTestdata };
@@ -414,6 +540,59 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
 
         const judgeResult = processJudgement(testData.subtasks, reportProgress, async (curCase, curCaseSubmit) => {
             await judgeTestCaseStandard(curCase, testDataPath, curCaseSubmit, task, language, testData.spj && testData.spj.language);
+        })
+
+        return judgeResult;
+    } finally {
+        tryEmptyDir(workingDir);
+        tryEmptyDir(spjWorkingDir);
+    }
+}
+
+export async function judgeInteraction(task: JudgeTask, reportProgress: (p: JudgeResult) => Promise<void>):
+    Promise<JudgeResult> {
+    const language = languages.find(l => l.name === task.language);
+    const testDataPath = Config.testDataDirectory + '/' + task.testdata;
+    let testData: TestData = null;
+    try {
+        testData = await readRulesFile(testDataPath);
+    } catch (e) {
+        return {
+            status: StatusType.NoTestdata,
+            systemMessage: util.inspect(e)
+        };
+    }
+    if (testData === null) {
+        return { status: StatusType.NoTestdata };
+    }
+    if (!testData.interactor) {
+        return { status: StatusType.NoTestdata, systemMessage: 'Missing interactor.' };
+    }
+
+    await createOrEmptyDir(binDir);
+    await createOrEmptyDir(spjBinDir);
+
+    try {
+        await reportProgress({ status: StatusType.Compiling });
+        const compilationResult = await compile(task.code, language, binDir, testData.extraSourceFiles[language.name]);
+        if (!compilationResult.ok) {
+            return {
+                status: StatusType.CompilationError,
+                compilationErrorMessage: compilationResult.message
+            };
+        }
+
+        await reportProgress({ status: StatusType.Compiling });
+        const spjCompilationResult = await compile(testData.interactor.sourceCode, testData.interactor.language, spjBinDir);
+        if (!spjCompilationResult.ok) {
+            return {
+                status: StatusType.JudgementFailed,
+                compilationErrorMessage: spjCompilationResult.message
+            };
+        }
+
+        const judgeResult = processJudgement(testData.subtasks, reportProgress, async (curCase, curCaseSubmit) => {
+            await judgeTestCaseInteraction(curCase, testDataPath, curCaseSubmit, task, language, testData.interactor.language);
         })
 
         return judgeResult;
