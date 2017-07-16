@@ -18,6 +18,14 @@ export interface JudgeTask {
     problem_type: string;
 }
 
+export interface InteractiveTask {
+    testdata: string;
+    time_limit: number;
+    memory_limit: number;
+    language: string;
+    code: string;
+}
+
 export interface SubmitAnswerTask {
     answer_file: string;
     testdata: string;
@@ -49,7 +57,8 @@ export async function uploadJudgeResult(task: JudgeTask, result: any) {
         uri: url.resolve(config.webUrl, '/api/v2/judge/update/' + task.judge_id),
         method: 'POST',
         body: {
-            result: JSON.stringify(result)
+            result: JSON.stringify(result),
+            type: 'submission'
         },
         qs: {
             session_id: config.webToken

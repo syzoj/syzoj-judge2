@@ -10,6 +10,7 @@ import * as decompress from 'decompress';
 import { SandboxStatus, SandboxResult } from 'simple-sandbox/lib/interfaces';
 import { TestData, TestCaseJudge, SubtaskJudge, SubtaskScoringType, readRulesFile } from './testData';
 import * as util from 'util';
+import * as path from 'path';
 
 export enum StatusType {
     Compiling,
@@ -372,7 +373,7 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
     Promise<JudgeResult> {
     const language = languages.find(l => l.name === task.language);
     const testDataPath = Config.testDataDirectory + '/' + task.testdata;
-    let testData = null;
+    let testData: TestData = null;
     try {
         testData = await readRulesFile(testDataPath);
     } catch (e) {
@@ -381,6 +382,7 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
             systemMessage: util.inspect(e)
         };
     }
+    console.log("Lang:: " + JSON.stringify(testData));
 
     if (testData === null) {
         return { status: StatusType.NoTestdata };
@@ -390,17 +392,18 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
 
     try {
         await reportProgress({ status: StatusType.Compiling });
-        const compilationResult = await compile(task.code, language, binDir);
+        const compilationResult = await compile(task.code, language, binDir, testData.extraSourceFiles[language.name]);
         if (!compilationResult.ok) {
             return {
                 status: StatusType.CompilationError,
                 compilationErrorMessage: compilationResult.message
             };
         }
-        if (testData.spjLanguage !== null) {
+
+        if (testData.spj) {
             await createOrEmptyDir(spjBinDir);
-            const spjCode = await fse.readFile(testDataPath + '/spj_' + testData.spjLanguage.name + '.' + testData.spjLanguage.fileExtension, 'utf8');
-            const spjCompilationResult = await compile(spjCode, testData.spjLanguage, spjBinDir);
+            await reportProgress({ status: StatusType.Compiling });
+            const spjCompilationResult = await compile(testData.spj.sourceCode, testData.spj.language, spjBinDir);
             if (!spjCompilationResult.ok) {
                 return {
                     status: StatusType.JudgementFailed,
@@ -408,8 +411,9 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
                 };
             }
         }
+
         const judgeResult = processJudgement(testData.subtasks, reportProgress, async (curCase, curCaseSubmit) => {
-            await judgeTestCaseStandard(curCase, testDataPath, curCaseSubmit, task, language, testData.spjLanguage);
+            await judgeTestCaseStandard(curCase, testDataPath, curCaseSubmit, task, language, testData.spj && testData.spj.language);
         })
 
         return judgeResult;
@@ -430,11 +434,10 @@ export async function judgeSubmitAnswer(task: SubmitAnswerTask, userData: Buffer
         await createOrEmptyDir(workingDir);
         await decompress(userData, workingDir);
 
-        if (testData.spjLanguage !== null) {
+        if (testData.spj) {
             await createOrEmptyDir(spjBinDir);
             await reportProgress({ status: StatusType.Compiling });
-            const spjCode = await fse.readFile(testDataPath + '/spj_' + testData.spjLanguage.name + '.' + testData.spjLanguage.fileExtension, 'utf8');
-            const spjCompilationResult = await compile(spjCode, testData.spjLanguage, spjBinDir);
+            const spjCompilationResult = await compile(testData.spj.sourceCode, testData.spj.language, spjBinDir);
             if (!spjCompilationResult.ok) {
                 return {
                     status: StatusType.JudgementFailed,
@@ -444,7 +447,7 @@ export async function judgeSubmitAnswer(task: SubmitAnswerTask, userData: Buffer
         }
 
         const judgeResult = await processJudgement(testData.subtasks, reportProgress, async (curCase, curCaseSubmit) => {
-            await judgeTestCaseSubmitAnswer(curCase, testDataPath, curCaseSubmit, task, testData.spjLanguage);
+            await judgeTestCaseSubmitAnswer(curCase, testDataPath, curCaseSubmit, task, testData.spj && testData.spj.language);
         });
 
         return judgeResult;

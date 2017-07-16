@@ -52,6 +52,18 @@ export function fileTooLongPrompt(actualSize: number, bytesRead: number): string
     return `<${omitted} byte${omitted != 1 ? 's' : ''} omitted>`;
 }
 
+export async function tryReadFile(path: string, encoding = 'utf8'): Promise<string> {
+    let fileContent = null;
+    try {
+        fileContent = await fse.readFile(path, 'utf8');
+    } catch (e) {
+        if (e.code !== 'ENOENT') {
+            throw e;
+        }
+    }
+    return fileContent;
+}
+
 export async function readFileLength(path: string, lengthLimit: number, appendPrompt = fileTooLongPrompt)
     : Promise<string> {
     let file = -1;
@@ -72,6 +84,19 @@ export async function readFileLength(path: string, lengthLimit: number, appendPr
             await fse.close(file);
         }
     }
+}
+
+export function filterPath(src: string): string {
+    const replaceList = ['..'];
+    let orig;
+    let cur = src;
+    do {
+        orig = cur;
+        for (const s of replaceList) {
+            cur = cur.replace(s, '');
+        }
+    } while (cur != orig);
+    return cur;
 }
 
 export async function tryEmptyDir(path: string) {

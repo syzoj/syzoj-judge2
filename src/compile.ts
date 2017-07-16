@@ -6,9 +6,11 @@ import { startSandbox } from 'simple-sandbox/lib/index';
 import { SandboxParameter, MountInfo, SandboxStatus, SandboxResult } from 'simple-sandbox/lib/interfaces';
 import { SandboxProcess } from 'simple-sandbox/lib/sandboxProcess';
 import { createOrEmptyDir, sandboxize, readFileLength, setWriteAccess } from './utils';
+import { FileContent } from './testData';
 import * as Bluebird from 'bluebird';
 import * as getFolderSize from 'get-folder-size';
 import * as randomString from 'randomstring';
+import * as path from 'path';
 const getSize: any = Bluebird.promisify(getFolderSize);
 
 export interface CompilationResult {
@@ -16,8 +18,7 @@ export interface CompilationResult {
     message?: string
 }
 
-export async function compile(source: string, language: Language, targetDir: string): Promise<CompilationResult> {
-
+export async function compile(source: string, language: Language, targetDir: string, extraFiles: FileContent[] = []): Promise<CompilationResult> {
     const srcDir = `${Config.workingDirectory}/src-${randomString.generate(10)}`;
     const binDir = targetDir;
     const tempDir = `${Config.workingDirectory}/temp`;
@@ -27,8 +28,15 @@ export async function compile(source: string, language: Language, targetDir: str
     await setWriteAccess(binDir, true);
     await setWriteAccess(tempDir, true);
 
+    const writeTasks: Promise<void>[] = [];
+    if (extraFiles) {
+        for (const f of extraFiles) {
+            writeTasks.push(fse.writeFile(path.join(srcDir, f.name), f.content, { encoding: 'utf8' }));
+        }
+    }
     const srcPath = `${srcDir}/${language.sourceFileName}`;
-    await fse.writeFile(srcPath, source, { encoding: 'utf8' });
+    writeTasks.push(fse.writeFile(srcPath, source, { encoding: 'utf8' }));
+    await Promise.all(writeTasks);
 
     const srcDir_Sandbox = '/sandbox/1';
     const binDir_Sandbox = '/sandbox/2';
