@@ -4,9 +4,9 @@ export interface ExecParam {
     time: number;
     memory: number;
     process: number;
-    stdin?: string;
-    stdout?: string;
-    stderr?: string;
+    stdin?: string | number;
+    stdout?: string | number;
+    stderr?: string | number;
     messageFile?: string;
     workingDirectory: string;
 }
@@ -22,13 +22,13 @@ export interface Language {
         workingDirectory: string,
         time: number,
         memory: number,
-        stdinFile?: string,
-        stdoutFile?: string,
-        stderrFile?: string
+        stdinFile?: string | number,
+        stdoutFile?: string | number,
+        stderrFile?: string | number
     ) => ExecParam;
 }
 
-export const languages : Language[] = [
+export const languages: Language[] = [
     require('./c'),
     require('./cpp'),
     require('./cpp11'),

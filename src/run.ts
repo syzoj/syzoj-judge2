@@ -53,9 +53,9 @@ export async function runProgram(language: Language,
     dataDir: string,
     time: number,
     memory: number,
-    stdinFile?: string,
-    stdoutFile?: string,
-    stderrFile?: string): Promise<RunResult> {
+    stdinFile?: string | number,
+    stdoutFile?: string | number,
+    stderrFile?: string | number): Promise<RunResult> {
 
     await setWriteAccess(binDir, false);
     await setWriteAccess(dataDir, true);
