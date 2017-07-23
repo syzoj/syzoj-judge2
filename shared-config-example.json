@@ -1,7 +1,7 @@
 {
     "webUrl": "http://127.0.0.1:5283",
     "webToken": "233",
-    "dataDirectory": "/home/t123yh/syzoj/uploads/testdata",
+    "dataDirectory": "/home/Menci/Projects/syzoj/uploads/testdata",
     "delay": 1000,
     "outputLimit": 104857600,
     "stderrDisplayLimit": 5120,
@@ -15,5 +15,5 @@
         "HOME=/tmp"
     ],
     "sandboxUser": "nobody",
-    "sandboxRoot": "/home/t123yh/alpine"
+    "sandboxRoot": "/ubuntu"
 }

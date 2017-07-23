@@ -191,8 +191,8 @@ export async function readRulesFile(dataPath: string): Promise<TestData> {
                 const matchResult = fileNameRegex.exec(fileName);
                 if (matchResult !== null) {
                     const filePrefix = matchResult[1];
-                    if ((await fse.stat(path + '/' + fileName)).isFile()) {
-                        const outputPathPrefix = path + '/' + filePrefix;
+                    if ((await fse.stat(dataPath + '/' + fileName)).isFile()) {
+                        const outputPathPrefix = dataPath + '/' + filePrefix;
                         if (await fse.exists(outputPathPrefix + '.out')) {
                             outputFileName = filePrefix + '.out';
                         } else if (await fse.exists(outputPathPrefix + '.ans')) {
