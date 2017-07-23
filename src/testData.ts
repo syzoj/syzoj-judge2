@@ -50,7 +50,7 @@ export interface FileContent {
 export interface UserConfigFile {
     subtasks: UserSubtask[];
     inputFile: string;
-    answerFile?: string;
+    outputFile?: string;
     userOutput?: string;
     specialJudge?: { language: string, fileName: string };
     interactor?: { language: string, fileName: string };
@@ -150,7 +150,7 @@ async function parseYamlContent(obj: UserConfigFile, dataPath: string): Promise<
             type: parseScoringType(s.type),
             cases: s.cases.map(c => ({
                 input: obj.inputFile ? filterPath(obj.inputFile.replace('#', c.toString())) : null,
-                output: obj.answerFile ? filterPath(obj.answerFile.replace('#', c.toString())) : null,
+                output: obj.outputFile ? filterPath(obj.outputFile.replace('#', c.toString())) : null,
                 userAnswer: obj.userOutput ? filterPath(obj.userOutput.replace('#', c.toString())) : null,
             }))
         })),
