@@ -81,7 +81,7 @@ statusToString[StatusType.JudgementFailed] = "Judgement Failed";
 statusToString[StatusType.Running] = "Running";
 statusToString[StatusType.Waiting] = "Waiting";
 statusToString[StatusType.Skipped] = "Skipped";
-statusToString[StatusType.Skipped] = "InvalidInteraction";
+statusToString[StatusType.InvalidInteraction] = "Invalid Interaction";
 
 const tempErrFile = "~user.err";
 
