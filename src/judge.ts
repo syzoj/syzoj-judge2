@@ -285,7 +285,7 @@ async function judgeTestCaseStandard(testcase: TestCaseJudge,
     if (currentCaseSubmit.status === StatusType.Running) {
         if (answerFilePath !== null)
             await fse.copy(answerFilePath, spjWorkingDir + '/answer');
-        if (spjLanguage !== null) {
+        if (spjLanguage != null) {
             if (inputFilePath !== null)
                 await fse.copy(inputFilePath, spjWorkingDir + '/input');
             await fse.writeFile(spjWorkingDir + '/code', task.code);
