@@ -220,7 +220,8 @@ export async function readRulesFile(dataPath: string): Promise<TestData> {
                     cases: cases
                 }],
                 spj: spj,
-                path: dataPath
+				path: dataPath,
+				extraSourceFiles: {}
             };
         }
     }
