@@ -604,7 +604,15 @@ export async function judgeInteraction(task: JudgeTask, reportProgress: (p: Judg
 
 export async function judgeSubmitAnswer(task: SubmitAnswerTask, userData: Buffer, reportProgress: (p: JudgeResult) => Promise<void>) {
     const testDataPath = Config.testDataDirectory + '/' + task.testdata;
-    const testData = await readRulesFile(testDataPath);
+    let testData: TestData = null;
+    try {
+        testData = await readRulesFile(testDataPath);
+    } catch (e) {
+        return {
+            status: StatusType.NoTestdata,
+            systemMessage: util.inspect(e)
+        };
+    }
     if (testData === null) {
         return { status: StatusType.NoTestdata };
     }
