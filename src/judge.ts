@@ -151,17 +151,17 @@ async function judgeTestCaseSubmitAnswer(testcase: TestCaseJudge,
     task: SubmitAnswerTask,
     spjLanguage: Language): Promise<void> {
 
-    const inputFilePath = testcase.input !== null ?
+    const inputFilePath = testcase.input != null ?
         testDataPath + '/' + testcase.input : null;
-    const answerFilePath = testcase.output !== null ?
+    const answerFilePath = testcase.output != null ?
         testDataPath + '/' + testcase.output : null;
-    const userAnswerFilePath = testcase.userAnswer !== null ?
+    const userAnswerFilePath = testcase.userAnswer != null ?
         workingDir + '/' + testcase.userAnswer : null;
 
-    if (inputFilePath !== null)
+    if (inputFilePath != null)
         currentCaseSubmit.input = await readFileLength(inputFilePath, Config.dataDisplayLimit);
 
-    if (answerFilePath !== null)
+    if (answerFilePath != null)
         currentCaseSubmit.answer = await readFileLength(answerFilePath, Config.dataDisplayLimit);
 
     currentCaseSubmit.userOutput = await readFileLength(userAnswerFilePath, Config.dataDisplayLimit);
@@ -180,10 +180,10 @@ async function judgeTestCaseSubmitAnswer(testcase: TestCaseJudge,
     }
 
     if (currentCaseSubmit.status === StatusType.Running) {
-        if (answerFilePath !== null)
+        if (answerFilePath != null)
             await fse.copy(answerFilePath, spjWorkingDir + '/answer');
-        if (spjLanguage !== null) {
-            if (inputFilePath !== null)
+        if (spjLanguage != null) {
+            if (inputFilePath != null)
                 await fse.copy(inputFilePath, spjWorkingDir + '/input');
             const spjResult = await runSpj(spjLanguage);
             currentCaseSubmit.score = spjResult.score;
@@ -206,9 +206,9 @@ async function judgeTestCaseStandard(testcase: TestCaseJudge,
 
     await createOrEmptyDir(workingDir);
     let stdin, stdout, outputFileName;
-    const inputFilePath = testcase.input !== null ?
+    const inputFilePath = testcase.input != null ?
         testDataPath + '/' + testcase.input : null;
-    const answerFilePath = testcase.output !== null ?
+    const answerFilePath = testcase.output != null ?
         testDataPath + '/' + testcase.output : null;
 
     if (task.file_io) {
@@ -216,14 +216,14 @@ async function judgeTestCaseStandard(testcase: TestCaseJudge,
         stdout = null;
         outputFileName = task.file_io_output_name;
 
-        if (inputFilePath !== null)
+        if (inputFilePath != null)
             await fse.copy(inputFilePath,
                 workingDir + '/' + task.file_io_input_name);
     } else {
         stdout = "data.out";
         outputFileName = stdout;
 
-        if (inputFilePath !== null) {
+        if (inputFilePath != null) {
             stdin = "data.in";
             await fse.copy(inputFilePath,
                 workingDir + '/' + stdin);
@@ -232,10 +232,10 @@ async function judgeTestCaseStandard(testcase: TestCaseJudge,
         }
     }
 
-    if (inputFilePath !== null)
+    if (inputFilePath != null)
         currentCaseSubmit.input = await readFileLength(inputFilePath, Config.dataDisplayLimit);
 
-    if (answerFilePath !== null)
+    if (answerFilePath != null)
         currentCaseSubmit.answer = await readFileLength(answerFilePath, Config.dataDisplayLimit);
 
     currentCaseSubmit.pending = false;
@@ -283,10 +283,10 @@ async function judgeTestCaseStandard(testcase: TestCaseJudge,
 
     await tryEmptyDir(workingDir);
     if (currentCaseSubmit.status === StatusType.Running) {
-        if (answerFilePath !== null)
+        if (answerFilePath != null)
             await fse.copy(answerFilePath, spjWorkingDir + '/answer');
         if (spjLanguage != null) {
-            if (inputFilePath !== null)
+            if (inputFilePath != null)
                 await fse.copy(inputFilePath, spjWorkingDir + '/input');
             await fse.writeFile(spjWorkingDir + '/code', task.code);
             const spjResult = await runSpj(spjLanguage);
@@ -316,24 +316,24 @@ async function judgeTestCaseInteraction(testcase: TestCaseJudge,
         await createOrEmptyDir(workingDir);
 
         let stdin, stdout, outputFileName;
-        const inputFilePath = testcase.input !== null ?
+        const inputFilePath = testcase.input != null ?
             path.join(testDataPath, testcase.input) : null;
-        const answerFilePath = testcase.output !== null ?
+        const answerFilePath = testcase.output != null ?
             path.join(testDataPath, testcase.output) : null;
 
-        if (inputFilePath !== null) {
+        if (inputFilePath != null) {
             await fse.copy(inputFilePath,
                 path.join(spjWorkingDir, 'input'));
         }
-        if (answerFilePath !== null) {
+        if (answerFilePath != null) {
             await fse.copy(answerFilePath,
                 path.join(spjWorkingDir, 'answer'));
         }
         await fse.writeFile(path.join(spjWorkingDir, 'code'), task.code);
 
-        if (inputFilePath !== null)
+        if (inputFilePath != null)
             currentCaseSubmit.input = await readFileLength(inputFilePath, Config.dataDisplayLimit);
-        if (answerFilePath !== null)
+        if (answerFilePath != null)
             currentCaseSubmit.answer = await readFileLength(answerFilePath, Config.dataDisplayLimit);
 
         currentCaseSubmit.pending = false;
@@ -510,7 +510,7 @@ export async function judgeStandard(task: JudgeTask, reportProgress: (p: JudgeRe
         };
     }
 
-    if (testData === null) {
+    if (testData == null) {
         return { status: StatusType.NoTestdata };
     }
 
@@ -562,7 +562,7 @@ export async function judgeInteraction(task: JudgeTask, reportProgress: (p: Judg
             systemMessage: util.inspect(e)
         };
     }
-    if (testData === null) {
+    if (testData == null) {
         return { status: StatusType.NoTestdata };
     }
     if (!testData.interactor) {
@@ -613,7 +613,7 @@ export async function judgeSubmitAnswer(task: SubmitAnswerTask, userData: Buffer
             systemMessage: util.inspect(e)
         };
     }
-    if (testData === null) {
+    if (testData == null) {
         return { status: StatusType.NoTestdata };
     }
 
